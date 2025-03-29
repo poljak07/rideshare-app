@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
 
@@ -50,6 +51,10 @@ class HandleInertiaRequests extends Middleware
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),
             ],
+            'googleMapsApiKey' => fn () => auth()->check()
+                ? Config::get('services.google_maps.api_key')
+                : null,
         ];
+
     }
 }

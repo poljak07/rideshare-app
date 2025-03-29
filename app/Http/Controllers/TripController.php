@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Trip;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 
 class TripController extends Controller
 {
@@ -12,7 +14,12 @@ class TripController extends Controller
      */
     public function index()
     {
-        //
+        $userId = Auth::id();
+        $trips = Trip::where('user_id', $userId)->get();
+
+        return Inertia::render('trip/Index',[
+            'trips' => $trips,
+            ]);
     }
 
     /**
@@ -20,7 +27,7 @@ class TripController extends Controller
      */
     public function create()
     {
-        //
+
     }
 
     /**
@@ -36,7 +43,14 @@ class TripController extends Controller
      */
     public function show(Trip $trip)
     {
-        //
+        return Inertia::render('trip/Show', [
+            'trip' => [
+                'id' => $trip->id,
+                'destination' => json_decode($trip->destination, true),
+                'driverLocation' => json_decode($trip->driver_location, true),
+                'destination_name' => $trip->destination_name,
+            ],
+        ]);
     }
 
     /**
