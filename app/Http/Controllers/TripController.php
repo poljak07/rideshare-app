@@ -6,6 +6,7 @@ use App\Models\Trip;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use function Pest\Laravel\json;
 
 class TripController extends Controller
 {
@@ -27,7 +28,7 @@ class TripController extends Controller
      */
     public function create()
     {
-
+        return Inertia::render('trip/Create');
     }
 
     /**
@@ -35,7 +36,24 @@ class TripController extends Controller
      */
     public function store(Request $request)
     {
-        //
+
+        $request->validate([
+            // 'car_id' => ['required', 'integer', 'exists:cars,id'],
+            'location' => ['required'],
+            'place' => ['required'],
+            'startingplace' => ['required'],
+        ]);
+
+        $trip = Trip::create([
+            'user_id' => Auth::id(),
+            'car_id' => 1, // TODO
+            'destination' => json_encode($request->input('location')),
+            'destination_name' => $request->input('place'),
+            'origin' => $request->input('startingplace'),
+            'driver_location' => json_encode($request->input('startingLocation')),
+        ]);
+
+        return redirect(route('trip.show', $trip->id));
     }
 
     /**

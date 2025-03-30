@@ -42,7 +42,7 @@ onMounted(() => {
     loader.load().then(() => {
         map = new google.maps.Map(mapContainer.value, {
             center: {lat: destLat, lng: destLng},
-            zoom: 13,
+            zoom: 8,
         });
 
         const destinationMarker = new google.maps.Marker({
@@ -60,11 +60,11 @@ onMounted(() => {
         });
 
         const destinationInfoWindow = new google.maps.InfoWindow({
-            content: `<b class="text-black">${destination_name}</b><br class="text-black">Latitude: ${destLat}, Longitude: ${destLng}`,
+            content: `<b class="text-black">${destination_name}</b><br> <b class="text-black">Latitude: ${destLat}, Longitude: ${destLng}</b>`,
         });
 
         const driverInfoWindow = new google.maps.InfoWindow({
-            content: `<b class="text-black">Driver Location</b><br class="text-black">Latitude: ${driverLat}, Longitude: ${driverLng}`,
+            content: `<b class="text-black">Driver Location</b><br> <b class="text-black">Latitude: ${driverLat}, Longitude: ${driverLng}</b>`,
         });
 
         destinationMarker.addListener('click', () => {
@@ -93,6 +93,6 @@ watch(() => props.driverLocation, (newLocation) => {
 <style scoped>
 .map-container {
     width: 100%;
-    height: 400px;
+    height: 800px;
 }
 </style>
