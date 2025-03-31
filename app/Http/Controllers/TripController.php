@@ -38,7 +38,6 @@ class TripController extends Controller
     {
 
         $request->validate([
-            // 'car_id' => ['required', 'integer', 'exists:cars,id'],
             'location' => ['required'],
             'place' => ['required'],
             'startingplace' => ['required'],
@@ -46,7 +45,7 @@ class TripController extends Controller
 
         $trip = Trip::create([
             'user_id' => Auth::id(),
-            'car_id' => 1, // TODO
+            'car_id' => Auth::user()->car->id,
             'destination' => json_encode($request->input('location')),
             'destination_name' => $request->input('place'),
             'origin' => $request->input('startingplace'),

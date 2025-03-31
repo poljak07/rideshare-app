@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CarController;
 use App\Http\Controllers\TripController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -18,6 +19,12 @@ Route::middleware('auth')->group(function() {
     Route::get('trips/create', [TripController::class, 'create'])->name('trip.create');
     Route::post('trips/store', [TripController::class, 'store'])->name('trip.store');
     Route::get('trips/{trip}', [TripController::class, 'show'])->name('trip.show');
+    Route::get('cars/create', [CarController::class, 'create'])->name('car.create');
+    Route::post('cars/store', [CarController::class, 'store'])->name('car.store');
+    Route::get('cars/{car}', [CarController::class, 'show'])->name('car.show');
+
+
+
 });
 
 

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Car;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class CarController extends Controller
 {
@@ -20,7 +22,7 @@ class CarController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('car/Create');
     }
 
     /**
@@ -28,7 +30,24 @@ class CarController extends Controller
      */
     public function store(Request $request)
     {
-        //
+
+        $request->validate([
+            'model' => ['required'],
+            'color' => ['required'],
+            'licenseplate' => ['required'],
+            'year' => ['required', 'numeric'],
+        ]);
+
+        $car = Car::create([
+            'user_id' => Auth::id(),
+            'model' => $request->model,
+            'color' => $request->color,
+            'license_plate' => $request->licenseplate,
+            'year' => $request->year,
+        ]);
+
+        return redirect(route('car.show', $car->id));
+
     }
 
     /**
@@ -36,7 +55,7 @@ class CarController extends Controller
      */
     public function show(Car $car)
     {
-        //
+        dd($car);
     }
 
     /**
