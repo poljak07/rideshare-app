@@ -90,9 +90,4 @@ watch(() => props.driverLocation, (newLocation) => {
 }, {deep: true});
 </script>
 
-<style scoped>
-.map-container {
-    width: 100%;
-    height: 800px;
-}
-</style>
+

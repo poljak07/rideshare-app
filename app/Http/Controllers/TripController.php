@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Car;
 use App\Models\Trip;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 use function Pest\Laravel\json;
+
 
 class TripController extends Controller
 {
@@ -17,9 +20,11 @@ class TripController extends Controller
     {
         $userId = Auth::id();
         $trips = Trip::where('user_id', $userId)->get();
+        $cars = Car::where('user_id', $userId)->get();
 
         return Inertia::render('trip/Index',[
             'trips' => $trips,
+            'cars' => $cars,
             ]);
     }
 
@@ -60,12 +65,17 @@ class TripController extends Controller
      */
     public function show(Trip $trip)
     {
+
         return Inertia::render('trip/Show', [
             'trip' => [
                 'id' => $trip->id,
                 'destination' => json_decode($trip->destination, true),
                 'driverLocation' => json_decode($trip->driver_location, true),
                 'destination_name' => $trip->destination_name,
+                'origin' => $trip->origin,
+                'driver_name' => $trip->user->name,
+                'created_at' => $trip->created_at->diffForHumans(),
+                'updated_at' => $trip->updated_at->diffForHumans(),
             ],
         ]);
     }
@@ -93,4 +103,5 @@ class TripController extends Controller
     {
         //
     }
+
 }

@@ -14,9 +14,14 @@ const mainNavItems: NavItem[] = [
         href: '/dashboard',
         icon: LayoutGrid,
     },
+    {
+      title: 'Trips',
+      href: '/trips',
+      icon: LayoutGrid,
+    },
 ];
 
-const footerNavItems: NavItem[] = [
+/* const footerNavItems: NavItem[] = [
     {
         title: 'Github Repo',
         href: 'https://github.com/laravel/vue-starter-kit',
@@ -27,7 +32,7 @@ const footerNavItems: NavItem[] = [
         href: 'https://laravel.com/docs/starter-kits',
         icon: BookOpen,
     },
-];
+]; */
 </script>
 
 <template>
