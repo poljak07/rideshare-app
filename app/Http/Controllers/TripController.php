@@ -18,16 +18,25 @@ class TripController extends Controller
      */
     public function index()
     {
-        $userId = Auth::id();
-        $trips = Trip::where('user_id', $userId)->get();
-        $cars = Car::where('user_id', $userId)->get();
+        $trips = Trip::where('is_started', 0)
+            ->paginate(5)
+            ->through(function ($trip) {
+                return [
+                    'id' => $trip->id,
+                    'destination' => json_decode($trip->destination, true),
+                    'driverLocation' => json_decode($trip->driver_location, true),
+                    'destination_name' => $trip->destination_name,
+                    'origin' => $trip->origin,
+                    'driver_name' => $trip->user->name,
+                    'created_at' => $trip->created_at->diffForHumans(),
+                    'updated_at' => $trip->updated_at->diffForHumans(),
+                ];
+        });
 
-        return Inertia::render('trip/Index',[
+        return Inertia::render('trip/Index', [
             'trips' => $trips,
-            'cars' => $cars,
-            ]);
+        ]);
     }
-
     /**
      * Show the form for creating a new resource.
      */
