@@ -1,12 +1,16 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
-import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import MapComponent from '@/components/MapComponent.vue';
 import { router } from '@inertiajs/vue3';
+import LocationAutocomplete from '@/components/LocationAutocomplete.vue';
+import { useForm } from '@inertiajs/vue3';
 
-import PlaceholderPattern from '../../components/PlaceholderPattern.vue';
+
+const form = useForm({
+    place: '',
+    location: { lat: null, lng: null },
+});
 
 const props = defineProps<{
     trips: {
@@ -23,12 +27,11 @@ const goToPage = (url: string | null) => {
     }
 };
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Trips',
-        href: '/trips',
-    },
-];
+const searchTrips = () => {
+    form.get(route('trips.index'), {
+        preserveState: true,
+    });
+};
 
 console.log(props.trips.links);
 </script>
@@ -69,6 +72,44 @@ console.log(props.trips.links);
                 </a>
             </div>
         </div>
+    </div>
+
+    <div class="flex items-center justify-center gap-4 mb-6 flex-row">
+        <form class="flex items-end gap-4 mb-6">
+                <div class="flex-1">
+                    <LocationAutocomplete
+                        id="destination"
+                        label="Where are you driving?"
+                        placeholder="Enter Destination"
+                        v-model="form.place"
+                        :error="form.errors.place"
+                        autofocus
+                        :tabindex="1"
+                        @place-selected="({ location }) => form.location = location"
+                    />
+                </div>
+
+                <div class="flex-1">
+                    <LocationAutocomplete
+                        id="startingplace"
+                        label="Where are you starting?"
+                        placeholder="Enter Starting Point"
+                        v-model="form.startingplace"
+                        :error="form.errors.startingplace"
+                        :tabindex="2"
+                        @place-selected="({ location }) => form.startingLocation = location"
+                    />
+                </div>
+
+                <div class="flex-none justify-center ">
+                    <button
+                        @click="searchTrips"
+                        class="px-6 py-2 bg-blue-700 text-white font-semibold rounded-lg hover:bg-blue-900 transition-all h-[42px]"
+                    >
+                        Search
+                    </button>
+                </div>
+        </form>
     </div>
 
 
