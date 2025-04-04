@@ -15,6 +15,7 @@ Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard'
 
 Route::middleware('auth')->group(function() {
     Route::get('trips', [TripController::class, 'index'] )->name('trip.index');
+    Route::get('trips/search', [TripController::class, 'search'])->name('trip.search');
     Route::get('trips/create', [TripController::class, 'create'])->name('trip.create');
     Route::post('trips/store', [TripController::class, 'store'])->name('trip.store');
     Route::get('trips/{trip}', [TripController::class, 'show'])->name('trip.show');

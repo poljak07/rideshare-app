@@ -10,11 +10,24 @@ import { useForm } from '@inertiajs/vue3';
 const form = useForm({
     place: '',
     location: { lat: null, lng: null },
+    startingplace: '',
+    startingLocation: { lat: null, lng: null },
 });
 
 const props = defineProps<{
     trips: {
-        data: Array<{ id: number; destination_name: string }>;
+        data: Array<{
+            id: number;
+            origin: string;
+            destination_name: string;
+            driver_name: string;
+            created_at: string;
+            updated_at: string;
+            driver_location: {
+                lat: number;
+                lng: number;
+            } | null;
+        }>;
         current_page: number;
         last_page: number;
         links: Array<{ url: string | null; label: string; active: boolean }>;
@@ -28,7 +41,7 @@ const goToPage = (url: string | null) => {
 };
 
 const searchTrips = () => {
-    form.get(route('trips.index'), {
+    form.get(route('trip.search'), {
         preserveState: true,
     });
 };
@@ -75,20 +88,7 @@ console.log(props.trips.links);
     </div>
 
     <div class="flex items-center justify-center gap-4 mb-6 flex-row">
-        <form class="flex items-end gap-4 mb-6">
-                <div class="flex-1">
-                    <LocationAutocomplete
-                        id="destination"
-                        label="Where are you driving?"
-                        placeholder="Enter Destination"
-                        v-model="form.place"
-                        :error="form.errors.place"
-                        autofocus
-                        :tabindex="1"
-                        @place-selected="({ location }) => form.location = location"
-                    />
-                </div>
-
+        <form class="flex items-end gap-4 mb-6" @submit.prevent="searchTrips">
                 <div class="flex-1">
                     <LocationAutocomplete
                         id="startingplace"
@@ -96,14 +96,26 @@ console.log(props.trips.links);
                         placeholder="Enter Starting Point"
                         v-model="form.startingplace"
                         :error="form.errors.startingplace"
-                        :tabindex="2"
+                        :tabindex="1"
                         @place-selected="({ location }) => form.startingLocation = location"
+                    />
+                </div>
+
+                <div class="flex-1">
+                    <LocationAutocomplete
+                        id="destination"
+                        label="Where are you going?"
+                        placeholder="Enter Destination"
+                        v-model="form.place"
+                        :error="form.errors.place"
+                        :tabindex="2"
+                        @place-selected="({ location }) => form.location = location"
                     />
                 </div>
 
                 <div class="flex-none justify-center ">
                     <button
-                        @click="searchTrips"
+                        type="submit"
                         class="px-6 py-2 bg-blue-700 text-white font-semibold rounded-lg hover:bg-blue-900 transition-all h-[42px]"
                     >
                         Search
@@ -153,7 +165,7 @@ console.log(props.trips.links);
                         </p>
                         <p class="max-w-xs text-sm leading-tight text-gray-800 font-bold md:max-w-xl md:text-base dark:text-gray-400">
                             <span v-if="trip.driver_location">
-                                {{ trip.driver_location.latitude }}, {{ trip.driver_location.longitude }}
+                                {{ trip.driver_location.lat }}, {{ trip.driver_location.lng }}
                             </span>
                                                     <span v-else>
                                 Location not available

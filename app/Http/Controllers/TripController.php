@@ -18,25 +18,17 @@ class TripController extends Controller
      */
     public function index()
     {
-        $trips = Trip::where('is_started', 0)
+        $trips = Trip::with('user')
+            ->where('is_started', 0)
             ->paginate(5)
-            ->through(function ($trip) {
-                return [
-                    'id' => $trip->id,
-                    'destination' => json_decode($trip->destination, true),
-                    'driverLocation' => json_decode($trip->driver_location, true),
-                    'destination_name' => $trip->destination_name,
-                    'origin' => $trip->origin,
-                    'driver_name' => $trip->user->name,
-                    'created_at' => $trip->created_at->diffForHumans(),
-                    'updated_at' => $trip->updated_at->diffForHumans(),
-                ];
-        });
+            ->through(fn ($trip) => $this->formatTrip($trip));
 
         return Inertia::render('trip/Index', [
             'trips' => $trips,
         ]);
     }
+
+
     /**
      * Show the form for creating a new resource.
      */
@@ -76,17 +68,8 @@ class TripController extends Controller
     {
 
         return Inertia::render('trip/Show', [
-            'trip' => [
-                'id' => $trip->id,
-                'destination' => json_decode($trip->destination, true),
-                'driverLocation' => json_decode($trip->driver_location, true),
-                'destination_name' => $trip->destination_name,
-                'origin' => $trip->origin,
-                'driver_name' => $trip->user->name,
-                'created_at' => $trip->created_at->diffForHumans(),
-                'updated_at' => $trip->updated_at->diffForHumans(),
-            ],
-        ]);
+            'trip' => $this->formatTrip($trip),
+    ]);
     }
 
     /**
@@ -111,6 +94,34 @@ class TripController extends Controller
     public function destroy(Trip $trip)
     {
         //
+    }
+
+    public function search(Request $request)
+    {
+        $trips = Trip::with('user')
+        ->when($request->startingplace, fn ($q) => $q->where('origin', 'LIKE', "%{$request->startingplace}%"))
+            ->when($request->place, fn ($q) => $q->where('destination_name', 'LIKE', "%{$request->place}%"))
+            ->paginate(5)
+            ->through(fn ($trip) => $this->formatTrip($trip));
+
+
+        return Inertia::render('trip/Index', [
+            'trips' => $trips->appends($request->query())
+        ]);
+    }
+
+    private function formatTrip($trip)
+    {
+        return [
+            'id' => $trip->id,
+            'destination' => json_decode($trip->destination, true),
+            'driverLocation' => json_decode($trip->driver_location, true),
+            'destination_name' => $trip->destination_name,
+            'origin' => $trip->origin,
+            'driver_name' => $trip->user->name,
+            'created_at' => $trip->created_at->diffForHumans(),
+            'updated_at' => $trip->updated_at->diffForHumans(),
+        ];
     }
 
 }
