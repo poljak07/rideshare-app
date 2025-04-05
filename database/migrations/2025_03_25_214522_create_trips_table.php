@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id();
             $table->foreignIdFor(User::class);
             $table->foreignIdFor(Car::class);
+            $table->unsignedInteger('seats')->default(3);
             $table->boolean('is_started')->default(false);
             $table->boolean('is_complete')->default(false);
             $table->json('origin')->nullable();

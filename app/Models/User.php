@@ -57,4 +57,8 @@ class User extends Authenticatable
         return $this->hasOne(Car::class);
     }
 
+    public function tripRequests()
+    {
+        return $this->hasMany(TripPassenger::class);
+    }
 }
