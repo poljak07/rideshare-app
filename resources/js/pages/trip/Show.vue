@@ -1,15 +1,36 @@
 <script setup>
 
+import { ref } from 'vue';
 import MapComponent from '@/components/MapComponent.vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import AppNavbar from "../../components/AppNavbar.vue";
+import { router } from '@inertiajs/vue3';
 
 const props = defineProps({
     trip: {
         type: Object,
         required: true,
     },
+    alreadyRequested: {
+        type: Boolean,
+        required: true,
+    },
 });
+
+const hasRequested = ref(props.alreadyRequested);
+
+const requestTrip = (tripId) => {
+    router.post(route('trip.request', { trip: tripId }), {}, {
+        onSuccess: () => {
+            console.log('Trip requested successfully!');
+            hasRequested.value = true;
+        },
+        onError: (errors) => {
+            console.error(errors);
+        }
+    });
+};
+
 </script>
 
 <template>
@@ -36,14 +57,37 @@ const props = defineProps({
                         <p class="max-w-xs text-sm leading-tight text-gray-800 font-bold md:max-w-xl md:text-base dark:text-gray-400">Driver's current location: {{ trip.driverLocation }}</p>
                     </div>
                 </div>
-                <button type="button" aria-disabled="false"
-                        class="group inline-flex items-center justify-center whitespace-nowrap rounded-lg align-middle text-sm font-semibold leading-none transition-all duration-300 ease-in-out disabled:cursor-not-allowed stroke-blue-700 text-blue-700 h-[42px] min-w-[42px] gap-2 disabled:stroke-slate-400 disabled:text-slate-400 hover:stroke-blue-950 hover:text-blue-950 p-0">
-                    <div>Go Back</div>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1D4ED8" stroke-width="1.5" xmlns="http://www.w3.org/2000/svg" class="size-6 stroke-inherit">
-                        <path d="M11 16L15 12L11 8" stroke-linecap="round" stroke-linejoin="round"></path>
-                        <circle cx="12" cy="12" r="9"></circle>
-                    </svg>
-                </button>
+                <div class="flex gap-3">
+                    <button
+                        @click="requestTrip(trip.id)"
+                        :disabled="hasRequested"
+                        class="group gap-6 items-center justify-center whitespace-nowrap rounded-lg py-2 align-middle text-sm font-semibold leading-none transition-all duration-300 ease-in-out disabled:cursor-not-allowed bg-blue-700 stroke-white px-6 text-white hover:bg-blue-950 h-[38px] min-w-[38px] gap-2 disabled:bg-slate-100 disabled:stroke-slate-400 disabled:text-slate-400 disabled:hover:bg-slate-100 hidden min-[375px]:inline-flex"
+                    >
+                        <div>{{ hasRequested ? 'You already requested this Trip' : 'Book a Trip' }}</div>
+                    </button>
+
+                    <a
+                        :href="route('trip.index')"
+                        aria-disabled="false"
+                        class="group inline-flex items-center justify-center whitespace-nowrap rounded-lg align-middle text-sm font-semibold leading-none transition-all duration-300 ease-in-out disabled:cursor-not-allowed stroke-blue-700 text-blue-700 h-[42px] min-w-[42px] gap-2 disabled:stroke-slate-400 disabled:text-slate-400 hover:stroke-blue-950 hover:text-blue-950 p-0"
+                    >
+                        <div>Go Back</div>
+                        <svg
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#1D4ED8"
+                            stroke-width="1.5"
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="size-6 stroke-inherit"
+                        >
+                            <path d="M11 16L15 12L11 8" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <circle cx="12" cy="12" r="9"></circle>
+                        </svg>
+                    </a>
+
+                </div>
             </div>
         </div>
     </section>

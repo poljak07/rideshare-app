@@ -1,8 +1,8 @@
-<script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+<script setup>
+import { ref, watch } from 'vue';
+import { Head, router } from '@inertiajs/vue3';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import MapComponent from '@/components/MapComponent.vue';
-import { router } from '@inertiajs/vue3';
 import LocationAutocomplete from '@/components/LocationAutocomplete.vue';
 import { useForm } from '@inertiajs/vue3';
 import AppNavbar from '@/Components/AppNavbar.vue';
@@ -14,27 +14,35 @@ const form = useForm({
     startingLocation: { lat: null, lng: null },
 });
 
-const props = defineProps<{
-    trips: {
-        data: Array<{
-            id: number;
-            origin: string;
-            destination_name: string;
-            driver_name: string;
-            created_at: string;
-            updated_at: string;
-            driver_location: {
-                lat: number;
-                lng: number;
-            } | null;
-        }>;
-        current_page: number;
-        last_page: number;
-        links: Array<{ url: string | null; label: string; active: boolean }>;
-    };
-}>();
+const props = defineProps({
+    trips: Object
+});
 
-const goToPage = (url: string | null) => {
+const tripsData = ref(props.trips.data);
+
+watch(() => props.trips, (newTrips) => {
+    tripsData.value = newTrips.data;
+});
+
+const requestTrip = (tripId) => {
+    router.post(route('trip.request', { trip: tripId }), {}, {
+        preserveScroll: true,
+        onSuccess: () => {
+            const index = tripsData.value.findIndex(t => t.id === tripId);
+            if (index !== -1) {
+                tripsData.value[index] = {
+                    ...tripsData.value[index],
+                    already_requested: true
+                };
+            }
+        },
+        onError: (errors) => {
+            console.error(errors);
+        }
+    });
+};
+
+const goToPage = (url) => {
     if (url) {
         router.get(url);
     }
@@ -55,38 +63,38 @@ console.log(props.trips.links);
 
     <div class="flex items-center justify-center gap-4 mb-6 flex-row">
         <form class="flex items-end gap-4 mb-6" @submit.prevent="searchTrips">
-                <div class="flex-1">
-                    <LocationAutocomplete
-                        id="startingplace"
-                        label="Where are you starting?"
-                        placeholder="Enter Starting Point"
-                        v-model="form.startingplace"
-                        :error="form.errors.startingplace"
-                        :tabindex="1"
-                        @place-selected="({ location }) => form.startingLocation = location"
-                    />
-                </div>
+            <div class="flex-1">
+                <LocationAutocomplete
+                    id="startingplace"
+                    label="Where are you starting?"
+                    placeholder="Enter Starting Point"
+                    v-model="form.startingplace"
+                    :error="form.errors.startingplace"
+                    :tabindex="1"
+                    @place-selected="({ location }) => form.startingLocation = location"
+                />
+            </div>
 
-                <div class="flex-1">
-                    <LocationAutocomplete
-                        id="destination"
-                        label="Where are you going?"
-                        placeholder="Enter Destination"
-                        v-model="form.place"
-                        :error="form.errors.place"
-                        :tabindex="2"
-                        @place-selected="({ location }) => form.location = location"
-                    />
-                </div>
+            <div class="flex-1">
+                <LocationAutocomplete
+                    id="destination"
+                    label="Where are you going?"
+                    placeholder="Enter Destination"
+                    v-model="form.place"
+                    :error="form.errors.place"
+                    :tabindex="2"
+                    @place-selected="({ location }) => form.location = location"
+                />
+            </div>
 
-                <div class="flex-none justify-center ">
-                    <button
-                        type="submit"
-                        class="px-6 py-2 bg-blue-700 text-white font-semibold rounded-lg hover:bg-blue-900 transition-all h-[42px]"
-                    >
-                        Search
-                    </button>
-                </div>
+            <div class="flex-none justify-center ">
+                <button
+                    type="submit"
+                    class="px-6 py-2 bg-blue-700 text-white font-semibold rounded-lg hover:bg-blue-900 transition-all h-[42px]"
+                >
+                    Search
+                </button>
+            </div>
         </form>
     </div>
 
@@ -133,32 +141,42 @@ console.log(props.trips.links);
                             <span v-if="trip.driver_location">
                                 {{ trip.driver_location.lat }}, {{ trip.driver_location.lng }}
                             </span>
-                                                    <span v-else>
+                            <span v-else>
                                 Location not available
                             </span>
                         </p>
                     </div>
                 </div>
-                <a
-                    :href="route('trip.show', trip.id)"
-                    aria-disabled="false"
-                    class="group inline-flex items-center justify-center whitespace-nowrap rounded-lg align-middle text-sm font-semibold leading-none transition-all duration-300 ease-in-out disabled:cursor-not-allowed stroke-blue-700 text-blue-700 h-[42px] min-w-[42px] gap-2 disabled:stroke-slate-400 disabled:text-slate-400 hover:stroke-blue-950 hover:text-blue-950 p-0"
-                >
-                    <div>Read More</div>
-                    <svg
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="#1D4ED8"
-                        stroke-width="1.5"
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="size-6 stroke-inherit"
+                <div class="flex gap-3">
+                    <button
+                        @click="requestTrip(trip.id)"
+                        :disabled="trip.alreadyRequested"
+                        class="group gap-6 items-center justify-center whitespace-nowrap rounded-lg py-2 align-middle text-sm font-semibold leading-none transition-all duration-300 ease-in-out disabled:cursor-not-allowed bg-blue-700 stroke-white px-6 text-white hover:bg-blue-950 h-[38px] min-w-[38px] gap-2 disabled:bg-slate-100 disabled:stroke-slate-400 disabled:text-slate-400 disabled:hover:bg-slate-100 hidden min-[375px]:inline-flex"
                     >
-                        <path d="M11 16L15 12L11 8" stroke-linecap="round" stroke-linejoin="round"></path>
-                        <circle cx="12" cy="12" r="9"></circle>
-                    </svg>
-                </a>
+                        <div>{{ trip.alreadyRequested ? 'You already requested this Trip' : 'Book a Trip' }}</div>
+                    </button>
+                    <a
+                        :href="route('trip.show', trip.id)"
+                        aria-disabled="false"
+                        class="group inline-flex items-center justify-center whitespace-nowrap rounded-lg align-middle text-sm font-semibold leading-none transition-all duration-300 ease-in-out disabled:cursor-not-allowed stroke-blue-700 text-blue-700 h-[42px] min-w-[42px] gap-2 disabled:stroke-slate-400 disabled:text-slate-400 hover:stroke-blue-950 hover:text-blue-950 p-0"
+                    >
+                        <div>Read More</div>
+                        <svg
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#1D4ED8"
+                            stroke-width="1.5"
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="size-6 stroke-inherit"
+                        >
+                            <path d="M11 16L15 12L11 8" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <circle cx="12" cy="12" r="9"></circle>
+                        </svg>
+                    </a>
+
+                </div>
             </div>
 
         </div>
@@ -174,8 +192,4 @@ console.log(props.trips.links);
             />
         </div>
     </section>
-
-
-
-
 </template>

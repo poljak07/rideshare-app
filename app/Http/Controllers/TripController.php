@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Car;
 use App\Models\Trip;
+use App\Models\TripPassenger;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -69,6 +70,7 @@ class TripController extends Controller
 
         return Inertia::render('trip/Show', [
             'trip' => $this->formatTrip($trip),
+            'alreadyRequested' => $trip->hasUserRequested(),
     ]);
     }
 
@@ -119,9 +121,35 @@ class TripController extends Controller
             'destination_name' => $trip->destination_name,
             'origin' => $trip->origin,
             'driver_name' => $trip->user->name,
+            'alreadyRequested' => $trip->hasUserRequested(),
             'created_at' => $trip->created_at->diffForHumans(),
             'updated_at' => $trip->updated_at->diffForHumans(),
         ];
+    }
+
+    public function tripRequest(Request $request, Trip $trip)
+    {
+        // Check if user already requested
+        if ($trip->passengers()->where('user_id', auth()->id())->exists()) {
+            return back()->withErrors(['message' => 'Already requested to join this trip.']);
+        }
+
+        // Check car capacity
+        $passengerCount = $trip->passengers()->count();
+        $carCapacity = $trip->seats;
+
+        if ($passengerCount >= $carCapacity) {
+            return back()->withErrors(['message' => 'Trip is already full.']);
+        }
+
+        // Create the passenger request
+        TripPassenger::create([
+            'user_id' => Auth::id(),
+            'trip_id' => $trip->id,
+            'status' => "Pending",
+        ]);
+
+        return back()->with('success', 'Ride request sent successfully!');
     }
 
 }
