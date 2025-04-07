@@ -9,13 +9,14 @@ const form = useForm({
     place: '',
     startingplace: '',
     datetime: '',
+    seats: '',
     location: { lat: null, lng: null },
     startingLocation: { lat: null, lng: null },
 });
 
 const submit = () => {
     form.post(route('trip.store'), {
-        onFinish: () => form.reset('place', 'startingplace', 'datetime', 'location', 'startingLocation'),
+        onFinish: () => form.reset('place', 'startingplace', 'seats', 'datetime', 'location', 'startingLocation'),
     });
 };
 </script>
@@ -46,6 +47,19 @@ const submit = () => {
                     :tabindex="2"
                     @place-selected="({ location }) => form.startingLocation = location"
                 />
+
+                <div class="grid gap-2">
+                    <Label for="seats">Available Seats</Label>
+                    <input
+                        id="seats"
+                        type="number"
+                        class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                        required
+                        v-model.number="form.seats"
+                        placeholder="3" />
+                    <InputError :message="form.errors.seats" />
+                </div>
+
                 <Button type="submit" class="mt-2 w-full" tabindex="4" :disabled="form.processing">
                     <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
                     Submit Ride

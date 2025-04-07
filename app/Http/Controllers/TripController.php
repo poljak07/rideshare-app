@@ -48,7 +48,8 @@ class TripController extends Controller
             'location' => ['required'],
             'place' => ['required'],
             'startingplace' => ['required'],
-        ]);
+            'seats' => ['required', 'numeric'],
+            ]);
 
         $trip = Trip::create([
             'user_id' => Auth::id(),
@@ -56,6 +57,7 @@ class TripController extends Controller
             'destination' => json_encode($request->input('location')),
             'destination_name' => $request->input('place'),
             'origin' => $request->input('startingplace'),
+            'seats' => $request->input('seats'),
             'driver_location' => json_encode($request->input('startingLocation')),
         ]);
 
@@ -149,7 +151,15 @@ class TripController extends Controller
             'status' => "Pending",
         ]);
 
-        return back()->with('success', 'Ride request sent successfully!');
+        //return back()->with('success', 'Ride request sent successfully!');
+    }
+
+    public function tripCancel(Request $request, Trip $trip)
+    {
+        TripPassenger::where('trip_id', $trip->id)
+            ->where('user_id', Auth::id())
+            ->delete();
+
     }
 
 }

@@ -28,13 +28,6 @@ const requestTrip = (tripId) => {
     router.post(route('trip.request', { trip: tripId }), {}, {
         preserveScroll: true,
         onSuccess: () => {
-            const index = tripsData.value.findIndex(t => t.id === tripId);
-            if (index !== -1) {
-                tripsData.value[index] = {
-                    ...tripsData.value[index],
-                    already_requested: true
-                };
-            }
         },
         onError: (errors) => {
             console.error(errors);
@@ -53,6 +46,24 @@ const searchTrips = () => {
         preserveState: true,
     });
 };
+
+const cancelRequest = (tripId) => {
+    router.delete(route('trip.cancel', { trip: tripId }), {
+        preserveScroll: true,
+        onSuccess: () => {
+            console.log('Trip canceled successfully!');
+            const trip = tripsData.value.find(t => t.id === tripId);
+            if (trip) {
+                trip.alreadyRequested = false;
+            }
+        },
+        onError: (errors) => {
+            console.error(errors);
+        }
+    });
+};
+
+
 
 console.log(props.trips.links);
 </script>
@@ -103,7 +114,7 @@ console.log(props.trips.links);
         class="flex flex-col gap-6 py-12 md:gap-16 2xl:py-16 max-w-screen-2xl m-auto w-full px-3 sm:px-8 lg:px-16 xl:px-32"
     >
         <div
-            v-for="trip in props.trips.data"
+            v-for="trip in tripsData"
             :key="trip.id"
             class="flex flex-1 flex-col justify-center gap-6 overflow-hidden md:flex-row"
         >
@@ -148,12 +159,21 @@ console.log(props.trips.links);
                     </div>
                 </div>
                 <div class="flex gap-3">
+
                     <button
+                        v-if="!trip.alreadyRequested"
                         @click="requestTrip(trip.id)"
-                        :disabled="trip.alreadyRequested"
                         class="group gap-6 items-center justify-center whitespace-nowrap rounded-lg py-2 align-middle text-sm font-semibold leading-none transition-all duration-300 ease-in-out disabled:cursor-not-allowed bg-blue-700 stroke-white px-6 text-white hover:bg-blue-950 h-[38px] min-w-[38px] gap-2 disabled:bg-slate-100 disabled:stroke-slate-400 disabled:text-slate-400 disabled:hover:bg-slate-100 hidden min-[375px]:inline-flex"
                     >
-                        <div>{{ trip.alreadyRequested ? 'You already requested this Trip' : 'Book a Trip' }}</div>
+                        <div>Book a Trip</div>
+                    </button>
+
+                    <button
+                        v-if="trip.alreadyRequested"
+                        @click="cancelRequest(trip.id)"
+                        class="group gap-6 items-center justify-center whitespace-nowrap rounded-lg py-2 align-middle text-sm font-semibold leading-none transition-all duration-300 ease-in-out disabled:cursor-not-allowed bg-red-600 stroke-white px-6 text-white hover:bg-red-700 h-[38px] min-w-[38px] gap-2 disabled:bg-slate-100 disabled:stroke-slate-400 disabled:text-slate-400 disabled:hover:bg-slate-100 hidden min-[375px]:inline-flex"
+                    >
+                        <div>Cancel Trip Request</div>
                     </button>
                     <a
                         :href="route('trip.show', trip.id)"

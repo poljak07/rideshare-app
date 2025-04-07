@@ -31,6 +31,19 @@ const requestTrip = (tripId) => {
     });
 };
 
+
+const cancelRequest = (tripId) => {
+    router.delete(route('trip.cancel', { trip: tripId }), {
+        onSuccess: () => {
+            console.log('Trip canceled successfully!');
+            hasRequested.value = false;
+        },
+        onError: (errors) => {
+            console.error(errors);
+        }
+    });
+};
+
 </script>
 
 <template>
@@ -59,11 +72,19 @@ const requestTrip = (tripId) => {
                 </div>
                 <div class="flex gap-3">
                     <button
+                        v-if="!hasRequested"
                         @click="requestTrip(trip.id)"
-                        :disabled="hasRequested"
                         class="group gap-6 items-center justify-center whitespace-nowrap rounded-lg py-2 align-middle text-sm font-semibold leading-none transition-all duration-300 ease-in-out disabled:cursor-not-allowed bg-blue-700 stroke-white px-6 text-white hover:bg-blue-950 h-[38px] min-w-[38px] gap-2 disabled:bg-slate-100 disabled:stroke-slate-400 disabled:text-slate-400 disabled:hover:bg-slate-100 hidden min-[375px]:inline-flex"
                     >
-                        <div>{{ hasRequested ? 'You already requested this Trip' : 'Book a Trip' }}</div>
+                        <div>Book a Trip</div>
+                    </button>
+
+                    <button
+                        v-if="hasRequested"
+                        @click="cancelRequest(trip.id)"
+                        class="group gap-6 items-center justify-center whitespace-nowrap rounded-lg py-2 align-middle text-sm font-semibold leading-none transition-all duration-300 ease-in-out disabled:cursor-not-allowed bg-red-600 stroke-white px-6 text-white hover:bg-red-700 h-[38px] min-w-[38px] gap-2 disabled:bg-slate-100 disabled:stroke-slate-400 disabled:text-slate-400 disabled:hover:bg-slate-100 hidden min-[375px]:inline-flex"
+                    >
+                        <div>Cancel Trip Request</div>
                     </button>
 
                     <a
