@@ -18,7 +18,6 @@ return new class extends Migration
             $table->foreignId('trip_id')->constrained()->cascadeOnDelete();
             $table->enum('status', ['Pending', 'Accepted', 'Rejected'])->default('Pending');
             $table->timestamps();
-
             $table->unique(['user_id', 'trip_id']);
         });
     }

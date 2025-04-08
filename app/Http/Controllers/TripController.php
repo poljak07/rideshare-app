@@ -162,4 +162,12 @@ class TripController extends Controller
 
     }
 
+    public function updateStatus(Request $request, Trip $trip)
+    {
+
+        $trip->passengers()->update([
+            'status' => $request->status,
+        ]);
+    }
+
 }

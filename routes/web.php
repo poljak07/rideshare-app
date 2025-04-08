@@ -18,6 +18,7 @@ Route::middleware('auth')->group(function() {
     Route::get('trips/search', [TripController::class, 'search'])->name('trip.search');
     Route::get('trips/create', [TripController::class, 'create'])->name('trip.create');
     Route::post('trips/store', [TripController::class, 'store'])->name('trip.store');
+    Route::put('trips/status/{trip}', [TripController::class, 'updateStatus'])->name('trip.statusUpdate');
     Route::post('trips/request/{trip}', [TripController::class, 'tripRequest'])->name('trip.request');
     Route::delete('trips/cancel/{trip}', [TripController::class, 'tripCancel'])->name('trip.cancel');
     Route::get('trips/{trip}', [TripController::class, 'show'])->name('trip.show');
