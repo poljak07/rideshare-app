@@ -19,7 +19,9 @@ class TripController extends Controller
      */
     public function index()
     {
-        $trips = Trip::with('user')
+        $trips = Trip::with(['user', 'passengers' => function ($query) {
+            $query->where('user_id', auth()->id())->select('trip_id', 'status');
+        }])
             ->where('is_started', 0)
             ->paginate(5)
             ->through(fn ($trip) => $this->formatTrip($trip));
@@ -28,6 +30,7 @@ class TripController extends Controller
             'trips' => $trips,
         ]);
     }
+
 
 
     /**
@@ -69,10 +72,11 @@ class TripController extends Controller
      */
     public function show(Trip $trip)
     {
+        $userRequest = $trip->passengers()->where('user_id', auth()->id())->first();
 
         return Inertia::render('trip/Show', [
             'trip' => $this->formatTrip($trip),
-            'alreadyRequested' => $trip->hasUserRequested(),
+            'userRequestStatus' => $userRequest?->status
     ]);
     }
 
@@ -114,7 +118,7 @@ class TripController extends Controller
         ]);
     }
 
-    private function formatTrip($trip)
+    private function formatTrip(Trip $trip)
     {
         return [
             'id' => $trip->id,
@@ -123,7 +127,7 @@ class TripController extends Controller
             'destination_name' => $trip->destination_name,
             'origin' => $trip->origin,
             'driver_name' => $trip->user->name,
-            'alreadyRequested' => $trip->hasUserRequested(),
+            'requestStatus' => $trip->passengers->first()->status ?? null,
             'created_at' => $trip->created_at->diffForHumans(),
             'updated_at' => $trip->updated_at->diffForHumans(),
         ];
@@ -156,11 +160,23 @@ class TripController extends Controller
 
     public function tripCancel(Request $request, Trip $trip)
     {
-        TripPassenger::where('trip_id', $trip->id)
+        $tripPassenger = TripPassenger::where('trip_id', $trip->id)
             ->where('user_id', Auth::id())
-            ->delete();
+            ->first();
 
+        if (!$tripPassenger) {
+            return back()->withErrors(['error' => 'Request not found.']);
+        }
+
+        if ($tripPassenger->status !== 'Pending') {
+            return back()->withErrors(['error' => 'Your request already marked as Accepted or Rejected.']);
+        }
+
+        $tripPassenger->delete();
+
+        return back()->with('success', 'Request successfully deleted.');
     }
+
 
     public function updateStatus(Request $request, Trip $trip)
     {

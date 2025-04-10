@@ -15,7 +15,7 @@ const form = useForm({
 });
 
 const props = defineProps({
-    trips: Object
+    trips: Object,
 });
 
 const tripsData = ref(props.trips.data);
@@ -28,6 +28,8 @@ const requestTrip = (tripId) => {
     router.post(route('trip.request', { trip: tripId }), {}, {
         preserveScroll: true,
         onSuccess: () => {
+            const trip = tripsData.value.find(t => t.id === tripId);
+            if (trip) trip.requestStatus = 'Pending';
         },
         onError: (errors) => {
             console.error(errors);
@@ -47,19 +49,14 @@ const searchTrips = () => {
     });
 };
 
+
 const cancelRequest = (tripId) => {
     router.delete(route('trip.cancel', { trip: tripId }), {
         preserveScroll: true,
         onSuccess: () => {
-            console.log('Trip canceled successfully!');
             const trip = tripsData.value.find(t => t.id === tripId);
-            if (trip) {
-                trip.alreadyRequested = false;
-            }
+            if (trip) trip.requestStatus = null;
         },
-        onError: (errors) => {
-            console.error(errors);
-        }
     });
 };
 
@@ -124,7 +121,7 @@ console.log(props.trips.links);
                 <MapComponent
                     class="h-full w-full"
                     :trip="trip"
-                    :driverLocation="trip.driver_location"
+                    :driverLocation="trip.driverLocation"
                 />
             </div>
             <div class="flex flex-1 flex-col items-start gap-3 md:flex-1 md:justify-between md:gap-52">
@@ -149,8 +146,8 @@ console.log(props.trips.links);
                             Driver's origin: {{ trip.origin }}
                         </p>
                         <p class="max-w-xs text-sm leading-tight text-gray-800 font-bold md:max-w-xl md:text-base dark:text-gray-400">
-                            <span v-if="trip.driver_location">
-                                {{ trip.driver_location.lat }}, {{ trip.driver_location.lng }}
+                            <span v-if="trip.driverLocation">
+                               Driver Location: {{ trip.driverLocation.lat }}, {{ trip.driverLocation.lng }}
                             </span>
                             <span v-else>
                                 Location not available
@@ -161,7 +158,7 @@ console.log(props.trips.links);
                 <div class="flex gap-3">
 
                     <button
-                        v-if="!trip.alreadyRequested"
+                        v-if="!trip.requestStatus"
                         @click="requestTrip(trip.id)"
                         class="group gap-6 items-center justify-center whitespace-nowrap rounded-lg py-2 align-middle text-sm font-semibold leading-none transition-all duration-300 ease-in-out disabled:cursor-not-allowed bg-blue-700 stroke-white px-6 text-white hover:bg-blue-950 h-[38px] min-w-[38px] gap-2 disabled:bg-slate-100 disabled:stroke-slate-400 disabled:text-slate-400 disabled:hover:bg-slate-100 hidden min-[375px]:inline-flex"
                     >
@@ -169,12 +166,23 @@ console.log(props.trips.links);
                     </button>
 
                     <button
-                        v-if="trip.alreadyRequested"
+                        v-if="trip.requestStatus === 'Pending'"
                         @click="cancelRequest(trip.id)"
-                        class="group gap-6 items-center justify-center whitespace-nowrap rounded-lg py-2 align-middle text-sm font-semibold leading-none transition-all duration-300 ease-in-out disabled:cursor-not-allowed bg-red-600 stroke-white px-6 text-white hover:bg-red-700 h-[38px] min-w-[38px] gap-2 disabled:bg-slate-100 disabled:stroke-slate-400 disabled:text-slate-400 disabled:hover:bg-slate-100 hidden min-[375px]:inline-flex"
-                    >
+                        class="group gap-6 items-center justify-center whitespace-nowrap rounded-lg py-2 align-middle text-sm font-semibold leading-none transition-all duration-300 ease-in-out disabled:cursor-not-allowed bg-red-600 stroke-white px-6 text-white hover:bg-red-700 h-[38px] min-w-[38px] gap-2 disabled:bg-slate-100 disabled:stroke-slate-400 disabled:text-slate-400 disabled:hover:bg-slate-100 hidden min-[375px]:inline-flex"                    >
                         <div>Cancel Trip Request</div>
                     </button>
+
+                    <div v-if="trip.requestStatus === 'Accepted'"
+                         class="group gap-6 items-center justify-center whitespace-nowrap rounded-lg py-2 align-middle text-sm font-semibold leading-none transition-all duration-300 ease-in-out disabled:cursor-not-allowed bg-green-600 stroke-white px-6 text-white hover:bg-green-700 h-[38px] min-w-[38px] gap-2 disabled:bg-slate-100 disabled:stroke-slate-400 disabled:text-slate-400 disabled:hover:bg-slate-100 hidden min-[375px]:inline-flex"
+                    >
+                        You are in! Driver accepted your request.
+                    </div>
+
+                    <div v-if="trip.requestStatus === 'Rejected'"
+                         class="group gap-6 items-center justify-center whitespace-nowrap rounded-lg py-2 align-middle text-sm font-semibold leading-none transition-all duration-300 ease-in-out disabled:cursor-not-allowed bg-red-600 stroke-white px-6 text-white hover:bg-red-700 h-[38px] min-w-[38px] gap-2 disabled:bg-slate-100 disabled:stroke-slate-400 disabled:text-slate-400 disabled:hover:bg-slate-100 hidden min-[375px]:inline-flex"
+                    >
+                        Driver rejected your request.
+                    </div>
                     <a
                         :href="route('trip.show', trip.id)"
                         aria-disabled="false"

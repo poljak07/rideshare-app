@@ -1,6 +1,6 @@
 <script setup>
 
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import MapComponent from '@/components/MapComponent.vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import AppNavbar from "../../components/AppNavbar.vue";
@@ -11,19 +11,27 @@ const props = defineProps({
         type: Object,
         required: true,
     },
-    alreadyRequested: {
-        type: Boolean,
-        required: true,
+    userRequestStatus: {
+        type: String,
+        default: null,
     },
 });
 
-const hasRequested = ref(props.alreadyRequested);
+const requestStatus = ref(props.userRequestStatus);
+const errorMessage = ref(null);
+
+watch(
+    () => props.userRequestStatus,
+    (newValue) => {
+        requestStatus.value = newValue;
+    }
+);
 
 const requestTrip = (tripId) => {
     router.post(route('trip.request', { trip: tripId }), {}, {
         onSuccess: () => {
             console.log('Trip requested successfully!');
-            hasRequested.value = true;
+            requestStatus.value = 'Pending';
         },
         onError: (errors) => {
             console.error(errors);
@@ -31,15 +39,16 @@ const requestTrip = (tripId) => {
     });
 };
 
-
 const cancelRequest = (tripId) => {
     router.delete(route('trip.cancel', { trip: tripId }), {
         onSuccess: () => {
             console.log('Trip canceled successfully!');
-            hasRequested.value = false;
+            requestStatus.value = null;
+            errorMessage.value = null;
         },
         onError: (errors) => {
             console.error(errors);
+            errorMessage.value = errors?.message || 'An error occurred while canceling the trip.';
         }
     });
 };
@@ -70,9 +79,12 @@ const cancelRequest = (tripId) => {
                         <p class="max-w-xs text-sm leading-tight text-gray-800 font-bold md:max-w-xl md:text-base dark:text-gray-400">Driver's current location: {{ trip.driverLocation }}</p>
                     </div>
                 </div>
+                <div v-if="errorMessage" class="text-red-600 font-semibold text-sm mt-2">
+                    {{ errorMessage }}
+                </div>
                 <div class="flex gap-3">
                     <button
-                        v-if="!hasRequested"
+                        v-if="!requestStatus"
                         @click="requestTrip(trip.id)"
                         class="group gap-6 items-center justify-center whitespace-nowrap rounded-lg py-2 align-middle text-sm font-semibold leading-none transition-all duration-300 ease-in-out disabled:cursor-not-allowed bg-blue-700 stroke-white px-6 text-white hover:bg-blue-950 h-[38px] min-w-[38px] gap-2 disabled:bg-slate-100 disabled:stroke-slate-400 disabled:text-slate-400 disabled:hover:bg-slate-100 hidden min-[375px]:inline-flex"
                     >
@@ -80,12 +92,25 @@ const cancelRequest = (tripId) => {
                     </button>
 
                     <button
-                        v-if="hasRequested"
+                        v-if="requestStatus === 'Pending'"
                         @click="cancelRequest(trip.id)"
-                        class="group gap-6 items-center justify-center whitespace-nowrap rounded-lg py-2 align-middle text-sm font-semibold leading-none transition-all duration-300 ease-in-out disabled:cursor-not-allowed bg-red-600 stroke-white px-6 text-white hover:bg-red-700 h-[38px] min-w-[38px] gap-2 disabled:bg-slate-100 disabled:stroke-slate-400 disabled:text-slate-400 disabled:hover:bg-slate-100 hidden min-[375px]:inline-flex"
-                    >
+                        class="group gap-6 items-center justify-center whitespace-nowrap rounded-lg py-2 align-middle text-sm font-semibold leading-none transition-all duration-300 ease-in-out disabled:cursor-not-allowed bg-red-600 stroke-white px-6 text-white hover:bg-red-700 h-[38px] min-w-[38px] gap-2 disabled:bg-slate-100 disabled:stroke-slate-400 disabled:text-slate-400 disabled:hover:bg-slate-100 hidden min-[375px]:inline-flex"                    >
                         <div>Cancel Trip Request</div>
                     </button>
+
+                    <div v-if="requestStatus === 'Accepted'"
+                         class="group gap-6 items-center justify-center whitespace-nowrap rounded-lg py-2 align-middle text-sm font-semibold leading-none transition-all duration-300 ease-in-out disabled:cursor-not-allowed bg-green-600 stroke-white px-6 text-white hover:bg-green-700 h-[38px] min-w-[38px] gap-2 disabled:bg-slate-100 disabled:stroke-slate-400 disabled:text-slate-400 disabled:hover:bg-slate-100 hidden min-[375px]:inline-flex"
+                    >
+                        You are in! Driver accepted your request.
+                    </div>
+
+                    <div v-if="requestStatus === 'Rejected'"
+                         class="group gap-6 items-center justify-center whitespace-nowrap rounded-lg py-2 align-middle text-sm font-semibold leading-none transition-all duration-300 ease-in-out disabled:cursor-not-allowed bg-red-600 stroke-white px-6 text-white hover:bg-red-700 h-[38px] min-w-[38px] gap-2 disabled:bg-slate-100 disabled:stroke-slate-400 disabled:text-slate-400 disabled:hover:bg-slate-100 hidden min-[375px]:inline-flex"
+                    >
+                        Driver rejected your request.
+                    </div>
+
+
 
                     <a
                         :href="route('trip.index')"
