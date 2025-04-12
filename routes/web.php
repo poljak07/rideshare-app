@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CarController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\LocationController;
 use App\Http\Controllers\TripController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -10,24 +11,29 @@ Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
 
-Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
 
 Route::middleware('auth')->group(function() {
-    Route::get('trips', [TripController::class, 'index'] )->name('trip.index');
-    Route::get('trips/search', [TripController::class, 'search'])->name('trip.search');
-    Route::get('trips/create', [TripController::class, 'create'])->name('trip.create');
-    Route::post('trips/store', [TripController::class, 'store'])->name('trip.store');
-    Route::put('trips/status/{trip}', [TripController::class, 'updateStatus'])->name('trip.statusUpdate');
-    Route::post('trips/request/{trip}', [TripController::class, 'tripRequest'])->name('trip.request');
-    Route::delete('trips/cancel/{trip}', [TripController::class, 'tripCancel'])->name('trip.cancel');
-    Route::get('trips/{trip}', [TripController::class, 'show'])->name('trip.show');
-    Route::get('cars/create', [CarController::class, 'create'])->name('car.create');
-    Route::post('cars/store', [CarController::class, 'store'])->name('car.store');
-    Route::get('cars/{car}', [CarController::class, 'show'])->name('car.show');
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    Route::prefix('trips')->name('trip.')->group(function() {
+        Route::get('/', [TripController::class, 'index'] )->name('index');
+        Route::get('search', [TripController::class, 'search'])->name('search');
+        Route::get('create', [TripController::class, 'create'])->name('create');
+        Route::post('store', [TripController::class, 'store'])->name('store');
+        Route::put('status/{trip}', [TripController::class, 'updateStatus'])->name('statusUpdate');
+        Route::post('request/{trip}', [TripController::class, 'tripRequest'])->name('request');
+        Route::delete('cancel/{trip}', [TripController::class, 'tripCancel'])->name('cancel');
+        Route::get('{trip}', [TripController::class, 'show'])->name('show');
+    });
 
+    Route::prefix('cars')->name('car.')->group(function() {
+        Route::get('create', [CarController::class, 'create'])->name('create');
+        Route::post('store', [CarController::class, 'store'])->name('store');
+        Route::get('{car}', [CarController::class, 'show'])->name('show');
+    });
 
+    Route::get('/reverse-geocode', LocationController::class);
 });
 
 

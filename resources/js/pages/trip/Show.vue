@@ -19,6 +19,22 @@ const props = defineProps({
 
 const requestStatus = ref(props.userRequestStatus);
 const errorMessage = ref(null);
+const driverAddress = ref(null);
+
+const fetchDriverAddress = async () => {
+    if (!props.trip.driverLocation) return;
+
+    const { lat, lng } = props.trip.driverLocation;
+
+    try {
+        const response = await fetch(`/reverse-geocode?lat=${lat}&lng=${lng}`);
+        const data = await response.json();
+        driverAddress.value = data.address;
+    } catch (error) {
+        console.error('Error fetching driver location:', error);
+        driverAddress.value = 'Unable to fetch location';
+    }
+};
 
 watch(
     () => props.userRequestStatus,
@@ -26,6 +42,12 @@ watch(
         requestStatus.value = newValue;
     }
 );
+
+watch(() => props.trip.driverLocation, () => {
+    fetchDriverAddress();
+}, { immediate: true });
+
+
 
 const requestTrip = (tripId) => {
     router.post(route('trip.request', { trip: tripId }), {}, {
@@ -76,7 +98,9 @@ const cancelRequest = (tripId) => {
                         <h3 class="text-2xl font-semibold md:text-3xl">Trip from {{ trip.origin }} to {{ trip.destination_name }}</h3>
                         <p class="max-w-xs text-sm leading-tight text-gray-800 font-bold md:max-w-xl md:text-base dark:text-gray-400">Driver: {{ trip.driver_name }}</p>
                         <p class="max-w-xs text-sm leading-tight text-gray-800 font-bold md:max-w-xl md:text-base dark:text-gray-400">Driver's origin: {{ trip.origin }}</p>
-                        <p class="max-w-xs text-sm leading-tight text-gray-800 font-bold md:max-w-xl md:text-base dark:text-gray-400">Driver's current location: {{ trip.driverLocation }}</p>
+                        <p class="max-w-xs text-sm leading-tight text-gray-800 font-bold md:max-w-xl md:text-base dark:text-gray-400">
+                            Driver's location: {{ driverAddress || 'Loading...' }}
+                        </p>
                     </div>
                 </div>
                 <div v-if="errorMessage" class="text-red-600 font-semibold text-sm mt-2">
