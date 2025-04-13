@@ -96,6 +96,7 @@ const cancelRequest = (tripId) => {
                     </p>
                     <div class="flex flex-col gap-2 md:gap-3">
                         <h3 class="text-2xl font-semibold md:text-3xl">Trip from {{ trip.origin }} to {{ trip.destination_name }}</h3>
+                        <p class="text-lg text-green-600 font-bold md:text-xl">Price: {{ trip.price }} €</p>
                         <p class="max-w-xs text-sm leading-tight text-gray-800 font-bold md:max-w-xl md:text-base dark:text-gray-400">Driver: {{ trip.driver_name }}</p>
                         <p class="max-w-xs text-sm leading-tight text-gray-800 font-bold md:max-w-xl md:text-base dark:text-gray-400">Driver's origin: {{ trip.origin }}</p>
                         <p class="max-w-xs text-sm leading-tight text-gray-800 font-bold md:max-w-xl md:text-base dark:text-gray-400">

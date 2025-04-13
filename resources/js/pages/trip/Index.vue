@@ -153,10 +153,10 @@ console.log(props.trips.links);
                                 Location not available
                             </span>
                         </p>
+                        <p class="text-lg text-green-600 font-bold">Price: {{ trip.price }} €</p>
                     </div>
                 </div>
                 <div class="flex gap-3">
-
                     <button
                         v-if="!trip.requestStatus"
                         @click="requestTrip(trip.id)"
