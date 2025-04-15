@@ -21,6 +21,7 @@ class DashboardController extends Controller
         ->whereHas('trip', function ($query) use ($userId) {
             $query->where('user_id', $userId);
         })
+            ->where('status', 'Pending')
             ->get();
 
 

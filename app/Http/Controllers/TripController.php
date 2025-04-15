@@ -130,6 +130,7 @@ class TripController extends Controller
             'driver_name' => $trip->user->name,
             'price' => $trip->price,
             'requestStatus' => $trip->passengers->first()->status ?? null,
+            'isDriver' => $trip->user_id === auth()->id(),
             'created_at' => $trip->created_at->diffForHumans(),
             'updated_at' => $trip->updated_at->diffForHumans(),
         ];

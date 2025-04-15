@@ -35,7 +35,7 @@ const handleStatusChange = (request, newStatusValue) => {
     selectedRequest.value = request
     newStatus.value = newStatusValue
     oldStatus.value = request.status
-    confirmationMessage.value = `Are you sure you want to change this trip status to ${newStatusValue === 'accepted' ? 'Accept' : 'Reject'}?`
+    confirmationMessage.value = `Are you sure you want to change this trip status to ${newStatusValue === 'Accepted' ? 'Accept' : 'Reject'}?`
     showConfirmationModal.value = true
 }
 
@@ -44,20 +44,20 @@ const confirmStatusChange = async () => {
         await router.put(route('trip.statusUpdate', selectedRequest.value.trip.id), {
             status: newStatus.value
         });
-
-        selectedRequest.value.status = newStatus.value
+        router.reload();
     } catch (error) {
-        console.error('Error updating status:', error)
-        selectedRequest.value.status = oldStatus.value
+        console.error('Error updating status:', error);
+        selectedRequest.value.status = oldStatus.value;
     }
 
-    showConfirmationModal.value = false
+    showConfirmationModal.value = false;
 }
 
 const cancelStatusChange = () => {
     selectedRequest.value.status = oldStatus.value
     showConfirmationModal.value = false
 }
+
 
 console.log(props.trips);
 </script>
