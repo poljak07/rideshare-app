@@ -5,6 +5,7 @@ import AppNavbar from "../../components/AppNavbar.vue";
 import TripMap from '@/Components/TripMap.vue';
 import TripDetails from '@/Components/TripDetails.vue';
 import TripActions from '@/Components/TripActions.vue';
+import TripOwnerActions from '@/Components/TripOwnerActions.vue';
 
 const props = defineProps({
     trip: Object,
@@ -35,6 +36,10 @@ const requestTrip = (tripId) => {
         onSuccess: () => requestStatus.value = 'Pending',
         onError: (errors) => console.error(errors)
     });
+};
+
+const refresh = () => {
+    router.reload();
 };
 
 const cancelRequest = (tripId) => {
@@ -70,5 +75,13 @@ const cancelRequest = (tripId) => {
             </div>
 
         </div>
+        <TripOwnerActions
+            v-if="trip.isDriver"
+            :trip="trip"
+            @refresh="refresh"
+        />
     </section>
+
+
+
 </template>

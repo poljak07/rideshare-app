@@ -73,12 +73,36 @@ class TripController extends Controller
      */
     public function show(Trip $trip)
     {
-        $userRequest = $trip->passengers()->where('user_id', auth()->id())->first();
+        $trip->load(['passengers.user']);
+
+        $formattedTrip = [
+            'id' => $trip->id,
+            'is_started' => $trip->is_started,
+            'destination' => json_decode($trip->destination, true),
+            'driverLocation' => json_decode($trip->driver_location, true),
+            'destination_name' => $trip->destination_name,
+            'origin' => $trip->origin,
+            'driver_name' => $trip->user->name,
+            'price' => $trip->price,
+            'passengers' => $trip->passengers->map(function ($passenger) {
+                return [
+                    'id' => $passenger->id,
+                    'user_id' => $passenger->user_id,
+                    'name' => $passenger->user->name,
+                    'status' => $passenger->status,
+                    'created_at' => $passenger->created_at->diffForHumans(),
+                ];
+            }),
+            'isDriver' => $trip->user_id === auth()->id(),
+            'created_at' => $trip->created_at->diffForHumans(),
+            'updated_at' => $trip->updated_at->diffForHumans(),
+        ];
 
         return Inertia::render('trip/Show', [
-            'trip' => $this->formatTrip($trip),
-            'userRequestStatus' => $userRequest?->status
-    ]);
+            'trip' => $formattedTrip,
+            'userRequestStatus' => $trip->passengers
+                ->firstWhere('user_id', auth()->id())?->status,
+        ]);
     }
 
     /**
@@ -181,12 +205,24 @@ class TripController extends Controller
     }
 
 
-    public function updateStatus(Request $request, Trip $trip)
+    public function updateStatus(Request $request, Trip $trip, TripPassenger $passenger)
     {
+        if ($passenger->trip_id !== $trip->id) {
+            abort(403);
+        }
 
-        $trip->passengers()->update([
+        $passenger->update([
             'status' => $request->status,
         ]);
+    }
+
+    public function tripStart(Trip $trip)
+    {
+        if($trip->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $trip->update(['is_started' => 1]);
     }
 
 }

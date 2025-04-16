@@ -21,9 +21,10 @@ Route::middleware('auth')->group(function() {
         Route::get('search', [TripController::class, 'search'])->name('search');
         Route::get('create', [TripController::class, 'create'])->name('create');
         Route::post('store', [TripController::class, 'store'])->name('store');
-        Route::put('status/{trip}', [TripController::class, 'updateStatus'])->name('statusUpdate');
+        Route::put('status/{trip}/{passenger}', [TripController::class, 'updateStatus'])->name('statusUpdate');
         Route::post('request/{trip}', [TripController::class, 'tripRequest'])->name('request');
         Route::delete('cancel/{trip}', [TripController::class, 'tripCancel'])->name('cancel');
+        Route::put('start/{trip}', [TripController::class, 'tripStart'])->name('start');
         Route::get('{trip}', [TripController::class, 'show'])->name('show');
     });
 
