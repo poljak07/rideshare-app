@@ -20,9 +20,20 @@ class TripController extends Controller
     public function index()
     {
         $trips = Trip::with(['user', 'passengers' => function ($query) {
-            $query->where('user_id', auth()->id())->select('trip_id', 'status');
+            $query->where('user_id', auth()->id())->select('trip_id', 'status', 'user_id');
         }])
-            ->where('is_started', 0)
+            ->where(function ($query) {
+                $query->where('is_started', 0)
+                    ->orWhere(function ($query) {
+                        $query->where('is_started', 1)
+                            ->where(function ($query) {
+                                $query->where('user_id', auth()->id())
+                                    ->orWhereHas('passengers', function ($q) {
+                                        $q->where('user_id', auth()->id());
+                                    });
+                            });
+                    });
+            })
             ->paginate(5)
             ->through(fn ($trip) => $this->formatTrip($trip));
 
@@ -73,6 +84,16 @@ class TripController extends Controller
      */
     public function show(Trip $trip)
     {
+        if ($trip->is_started) {
+            $user = auth()->user();
+            $isOwner = $trip->user_id === $user->id;
+            $isPassenger = $trip->passengers()->where('user_id', $user->id)->exists();
+
+            if (!$isOwner && !$isPassenger) {
+                abort(403);
+            }
+        }
+
         $trip->load(['passengers.user']);
 
         $formattedTrip = [
@@ -126,17 +147,38 @@ class TripController extends Controller
      */
     public function destroy(Trip $trip)
     {
-        //
+        if ($trip->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $trip->passengers()->delete();
+
+        $trip->delete();
+
+        return redirect()->route('trip.index')->with('success', 'Trip Deleted');
     }
 
     public function search(Request $request)
     {
-        $trips = Trip::with('user')
-        ->when($request->startingplace, fn ($q) => $q->where('origin', 'LIKE', "%{$request->startingplace}%"))
+        $trips = Trip::with(['user', 'passengers' => function ($query) {
+            $query->where('user_id', auth()->id())->select('trip_id', 'status', 'user_id');
+        }])
+            ->where(function ($query) {
+                $query->where('is_started', 0)
+                    ->orWhere(function ($query) {
+                        $query->where('is_started', 1)
+                            ->where(function ($query) {
+                                $query->where('user_id', auth()->id())
+                                    ->orWhereHas('passengers', function ($q) {
+                                        $q->where('user_id', auth()->id());
+                                    });
+                            });
+                    });
+            })
+            ->when($request->startingplace, fn ($q) => $q->where('origin', 'LIKE', "%{$request->startingplace}%"))
             ->when($request->place, fn ($q) => $q->where('destination_name', 'LIKE', "%{$request->place}%"))
             ->paginate(5)
             ->through(fn ($trip) => $this->formatTrip($trip));
-
 
         return Inertia::render('trip/Index', [
             'trips' => $trips->appends($request->query())
@@ -153,7 +195,7 @@ class TripController extends Controller
             'origin' => $trip->origin,
             'driver_name' => $trip->user->name,
             'price' => $trip->price,
-            'requestStatus' => $trip->passengers->first()->status ?? null,
+            'requestStatus' => $trip->passengers->firstWhere('user_id', auth()->id())->status ?? null,
             'isDriver' => $trip->user_id === auth()->id(),
             'created_at' => $trip->created_at->diffForHumans(),
             'updated_at' => $trip->updated_at->diffForHumans(),

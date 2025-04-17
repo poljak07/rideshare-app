@@ -24,6 +24,7 @@ Route::middleware('auth')->group(function() {
         Route::put('status/{trip}/{passenger}', [TripController::class, 'updateStatus'])->name('statusUpdate');
         Route::post('request/{trip}', [TripController::class, 'tripRequest'])->name('request');
         Route::delete('cancel/{trip}', [TripController::class, 'tripCancel'])->name('cancel');
+        Route::delete('destroy/{trip}', [TripController::class, 'destroy'])->name('destroy');
         Route::put('start/{trip}', [TripController::class, 'tripStart'])->name('start');
         Route::get('{trip}', [TripController::class, 'show'])->name('show');
     });
@@ -41,3 +42,5 @@ Route::middleware('auth')->group(function() {
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
+
+

@@ -9,9 +9,20 @@ import SearchForm from '@/Components/SearchForm.vue';
 import Pagination from '@/Components/Pagination.vue';
 
 const props = defineProps({ trips: Object });
-const tripsData = ref(props.trips.data);
+const tripsData = ref([]);
 
-watch(() => props.trips, (newTrips) => tripsData.value = newTrips.data);
+const sortTrips = (trips) => {
+    return [...trips].sort((a, b) => {
+        const aApproved = a.requestStatus === 'Accepted' ? 1 : 0;
+        const bApproved = b.requestStatus === 'Accepted' ? 1 : 0;
+        return bApproved - aApproved;
+    });
+};
+
+watch(() => props.trips, (newTrips) => {
+    tripsData.value = sortTrips(newTrips.data);
+}, { immediate: true });
+
 
 const requestTrip = (tripId) => {
     router.post(route('trip.request', { trip: tripId }), {}, {
@@ -37,53 +48,80 @@ const handleSearch = (form) => form.get(route('trip.search'), { preserveState: t
 </script>
 
 <template>
-    <Head title="Trips" />
-    <AppNavbar />
+    <div>
+        <Head title="Trips" />
+        <AppNavbar />
 
-    <div class="flex items-center justify-center gap-4 mb-6 flex-row">
-        <SearchForm @search="handleSearch" />
-    </div>
-
-    <section class="flex flex-col gap-6 py-12 md:gap-16 2xl:py-16 max-w-screen-2xl m-auto w-full px-3 sm:px-8 lg:px-16 xl:px-32">
-        <div v-for="trip in tripsData" :key="trip.id" class="flex flex-1 flex-col justify-center gap-6 overflow-hidden md:flex-row">
-            <TripMap :trip="trip" :driverLocation="trip.driverLocation" />
-
-            <div class="flex flex-1 flex-col items-start gap-3 md:flex-1 md:justify-between md:gap-52">
-                <TripDetails :trip="trip" />
-
-                <TripActions
-                    :tripId="trip.id"
-                    :requestStatus="trip.requestStatus"
-                    :showBackButton="false"
-                    @request="requestTrip"
-                    @cancel="cancelRequest"
-                >
-                    <a
-                        :href="route('trip.show', trip.id)"
-                        class="group inline-flex items-center justify-center whitespace-nowrap rounded-lg align-middle text-sm font-semibold leading-none transition-all duration-300 ease-in-out disabled:cursor-not-allowed stroke-blue-700 text-blue-700 h-[42px] min-w-[42px] gap-2 disabled:stroke-slate-400 disabled:text-slate-400 hover:stroke-blue-950 hover:text-blue-950 p-0 hidden min-[375px]:inline-flex"
-                    >
-                        <div>Read More</div>
-                        <svg
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="#1D4ED8"
-                            stroke-width="1.5"
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="size-6 stroke-inherit"
-                        >
-                            <path d="M11 16L15 12L11 8" stroke-linecap="round" stroke-linejoin="round"></path>
-                            <circle cx="12" cy="12" r="9"></circle>
-                        </svg>
-                    </a>
-                </TripActions>
-            </div>
+        <div class="flex items-center justify-center gap-4 mb-6 flex-row">
+            <SearchForm @search="handleSearch" />
         </div>
 
-        <Pagination
-            :links="props.trips.links"
-            @page-change="goToPage"
-        />
-    </section>
+        <section class="space-y-6 py-12 h- max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div
+                v-for="trip in tripsData"
+                :key="trip.id"
+                class="relative bg-white dark:bg-gray-800 rounded-xl shadow-sm transition-all duration-200 ease-out"
+                :class="{
+          'border-l-4 border-emerald-500': trip.requestStatus === 'Accepted',
+          'hover:shadow-md hover:border-gray-300': trip.requestStatus !== 'Accepted',
+          'border-l-4 border-transparent': trip.requestStatus !== 'Accepted'
+        }"
+            >
+                <div
+                    v-if="trip.requestStatus === 'Accepted'"
+                    class="absolute -top-3 right-4 bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                    <span>Your Trip</span>
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-6 p-6">
+                    <TripMap :trip="trip" :driverLocation="trip.driverLocation" class="md:w-1/2" />
+
+                    <div class="flex flex-col justify-between md:w-1/2">
+                        <TripDetails :trip="trip" />
+
+                        <div class="mt-4 border-t border-gray-100 dark:border-gray-700 pt-4">
+                            <TripActions
+                                :tripId="trip.id"
+                                :requestStatus="trip.requestStatus"
+                                :showBackButton="false"
+                                @request="requestTrip"
+                                @cancel="cancelRequest"
+                            >
+                                <a
+                                    :href="route('trip.show', trip.id)"
+                                    class="inline-flex items-center text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 font-medium transition-colors"
+                                >
+                                    <span>View Details</span>
+                                    <svg
+                                        class="w-5 h-5 ml-2"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M17 8l4 4m0 0l-4 4m4-4H3"
+                                        />
+                                    </svg>
+                                </a>
+                            </TripActions>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <Pagination
+                :links="props.trips.links"
+                @page-change="goToPage"
+                class="mt-8"
+            />
+        </section>
+    </div>
 </template>
