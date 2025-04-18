@@ -1,14 +1,13 @@
 <script setup>
 import { router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 const props = defineProps({
     trip: Object,
 });
 
 const emit = defineEmits(['refresh']);
-
-
-// TODO: Start & Delete Trip Route
+const isFinishing = ref(false);
 
 const startTrip = () => {
     router.put(route('trip.start', { trip: props.trip.id }), {}, {
@@ -20,6 +19,17 @@ const deleteTrip = () => {
     if (confirm('Are you sure you want to delete this trip?')) {
         router.delete(route('trip.destroy', { trip: props.trip.id }));
     }
+};
+
+const finishTrip = () => {
+    isFinishing.value = true;
+    router.put(route('trip.finish', { trip: props.trip.id }), {}, {
+        onSuccess: () => {
+            emit('refresh');
+            isFinishing.value = false;
+        },
+        onError: () => isFinishing.value = false
+    });
 };
 
 const updateStatus = (passengerId, status) => {
@@ -39,8 +49,15 @@ const updateStatus = (passengerId, status) => {
                 <h2 class="text-2xl font-bold text-gray-900">Trip Management</h2>
 
                 <div class="flex flex-col gap-4">
+                    <div v-if="trip.is_complete" class="flex items-center gap-2 bg-gray-600 text-white px-5 py-3 rounded-xl">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        Trip is Finished!
+                    </div>
+
                     <button
-                        v-if="!trip.is_started"
+                        v-if="!trip.is_started && !trip.is_complete"
                         @click="startTrip"
                         class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl transition-all"
                     >
@@ -51,28 +68,40 @@ const updateStatus = (passengerId, status) => {
                     </button>
 
                     <div
-                        v-else
+                        v-if="trip.is_started && !trip.is_complete"
                         class="flex items-center gap-2 bg-emerald-600 text-white px-5 py-3 rounded-xl"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 7.5A2.25 2.25 0 0 1 7.5 5.25h9a2.25 2.25 0 0 1 2.25 2.25v9a2.25 2.25 0 0 1-2.25 2.25h-9a2.25 2.25 0 0 1-2.25-2.25v-9Z" />
                         </svg>
-
                         Trip is started! Have a nice ride!
                     </div>
 
-                    <div class="flex flex-col sm:flex-row gap-4">
-                        <button
-                            @click="deleteTrip"
-                            class="flex-1 flex items-center gap-2 bg-rose-100 hover:bg-rose-200 text-rose-700 px-5 py-3 rounded-xl transition-all"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                            </svg>
-                            Delete Trip
-                        </button>
+                    <button
+                        v-if="trip.is_started && !trip.is_complete"
+                        @click="finishTrip"
+                        :disabled="isFinishing"
+                        class="flex-1 flex items-center gap-2 bg-gray-600 hover:bg-gray-800 text-white px-5 py-3 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <svg class="h-5 w-5" viewBox="0 0 64 64" fill="none">
+                            <path d="M16 4V60" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                            <path d="M16 8H44L36 20L44 32H16" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                            <circle cx="52" cy="52" r="6" fill="currentColor" stroke="currentColor" stroke-width="2"/>
+                            <path d="M16 52H46" stroke="currentColor" stroke-width="2" stroke-dasharray="6,4"/>
+                        </svg>
+                        {{ isFinishing ? 'Finishing...' : 'Finish Trip' }}
+                    </button>
 
-                    </div>
+                    <button
+                        v-if="!trip.is_started && !trip.is_complete"
+                        @click="deleteTrip"
+                        class="flex-1 flex items-center gap-2 bg-rose-100 hover:bg-rose-200 text-rose-700 px-5 py-3 rounded-xl transition-all"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        Delete Trip
+                    </button>
                 </div>
             </div>
 

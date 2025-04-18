@@ -99,6 +99,7 @@ class TripController extends Controller
         $formattedTrip = [
             'id' => $trip->id,
             'is_started' => $trip->is_started,
+            'is_complete' => $trip->is_complete,
             'destination' => json_decode($trip->destination, true),
             'driverLocation' => json_decode($trip->driver_location, true),
             'destination_name' => $trip->destination_name,
@@ -209,6 +210,10 @@ class TripController extends Controller
             return back()->withErrors(['message' => 'Already requested to join this trip.']);
         }
 
+        if ($trip->user_id === auth()->id()) {
+            abort(403, 'You cannot book your own trip.');
+        }
+
         // Check car capacity
         $passengerCount = $trip->passengers()->count();
         $carCapacity = $trip->seats;
@@ -266,5 +271,15 @@ class TripController extends Controller
 
         $trip->update(['is_started' => 1]);
     }
+
+    public function tripFinish(Trip $trip)
+    {
+        if($trip->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $trip->update(['is_complete' => 1]);
+    }
+
 
 }

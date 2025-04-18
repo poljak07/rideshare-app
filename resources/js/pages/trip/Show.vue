@@ -69,6 +69,7 @@ const cancelRequest = (tripId) => {
                 <TripActions
                     :tripId="trip.id"
                     :requestStatus="requestStatus"
+                    :isDriver="trip.isDriver"
                     @request="requestTrip"
                     @cancel="cancelRequest"
                 />

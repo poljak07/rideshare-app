@@ -23,7 +23,6 @@ watch(() => props.trips, (newTrips) => {
     tripsData.value = sortTrips(newTrips.data);
 }, { immediate: true });
 
-
 const requestTrip = (tripId) => {
     router.post(route('trip.request', { trip: tripId }), {}, {
         preserveScroll: true,
@@ -62,13 +61,13 @@ const handleSearch = (form) => form.get(route('trip.search'), { preserveState: t
                 :key="trip.id"
                 class="relative bg-white dark:bg-gray-800 rounded-xl shadow-sm transition-all duration-200 ease-out"
                 :class="{
-          'border-l-4 border-emerald-500': trip.requestStatus === 'Accepted',
-          'hover:shadow-md hover:border-gray-300': trip.requestStatus !== 'Accepted',
-          'border-l-4 border-transparent': trip.requestStatus !== 'Accepted'
-        }"
+                    'border-l-4 border-emerald-500': trip.requestStatus === 'Accepted' || trip.isDriver,
+                    'hover:shadow-md hover:border-gray-300': !(trip.requestStatus === 'Accepted' || trip.isDriver),
+                    'border-l-4 border-transparent': !(trip.requestStatus === 'Accepted' || trip.isDriver)
+                }"
             >
                 <div
-                    v-if="trip.requestStatus === 'Accepted'"
+                    v-if="trip.requestStatus === 'Accepted' || trip.isDriver"
                     class="absolute -top-3 right-4 bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -88,6 +87,7 @@ const handleSearch = (form) => form.get(route('trip.search'), { preserveState: t
                                 :tripId="trip.id"
                                 :requestStatus="trip.requestStatus"
                                 :showBackButton="false"
+                                :isDriver="trip.isDriver"
                                 @request="requestTrip"
                                 @cancel="cancelRequest"
                             >
