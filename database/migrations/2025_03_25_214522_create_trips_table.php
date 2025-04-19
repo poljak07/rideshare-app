@@ -20,7 +20,7 @@ return new class extends Migration
             $table->unsignedInteger('seats')->default(3);
             $table->boolean('is_started')->default(false);
             $table->boolean('is_complete')->default(false);
-            $table->json('origin')->nullable();
+            $table->string('origin')->nullable();
             $table->json('destination')->nullable();
             $table->string('destination_name')->nullable();
             $table->json('driver_location')->nullable();

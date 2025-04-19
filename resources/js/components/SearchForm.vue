@@ -3,7 +3,7 @@ import { useForm } from '@inertiajs/vue3';
 import LocationAutocomplete from '@/components/LocationAutocomplete.vue';
 
 const form = useForm({
-    place: '',
+    destination: '',
     location: { lat: null, lng: null },
     startingplace: '',
     startingLocation: { lat: null, lng: null },
@@ -12,8 +12,12 @@ const form = useForm({
 const emit = defineEmits(['search']);
 
 const searchTrips = () => {
-    emit('search', form);
+    emit('search', {
+        startingplace: form.startingplace,
+        destination: form.destination,
+    });
 };
+
 </script>
 
 <template>
@@ -35,8 +39,8 @@ const searchTrips = () => {
                 id="destination"
                 label="Where are you going?"
                 placeholder="Enter Destination"
-                v-model="form.place"
-                :error="form.errors.place"
+                v-model="form.destination"
+                :error="form.errors.destination"
                 :tabindex="2"
                 @place-selected="({ location }) => form.location = location"
             />

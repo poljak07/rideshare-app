@@ -2,11 +2,13 @@
 defineProps({
     trip: Object,
     driverAddress: String,
+    requestStatus: String,
     showFullInfo: {
         type: Boolean,
         default: false
     }
 });
+
 </script>
 
 <template>
@@ -21,8 +23,8 @@ defineProps({
             <p class="text-lg text-green-600 font-bold md:text-xl">Price: {{ trip.price }} €</p>
             <p class="max-w-xs text-sm leading-tight text-gray-800 font-bold md:max-w-xl md:text-base dark:text-gray-400">Driver: {{ trip.driver_name }}</p>
             <p class="max-w-xs text-sm leading-tight text-gray-800 font-bold md:max-w-xl md:text-base dark:text-gray-400">Driver's origin: {{ trip.origin }}</p>
-            
-            <template v-if="trip.isDriver || trip.requestStatus === 'Accept'">
+
+            <template v-if="trip.isDriver || requestStatus === 'Accepted'">
                 <p v-if="showFullInfo" class="max-w-xs text-sm leading-tight text-gray-800 font-bold md:max-w-xl md:text-base dark:text-gray-400">
                     Driver's location: {{ driverAddress || 'Loading...' }}
                 </p>

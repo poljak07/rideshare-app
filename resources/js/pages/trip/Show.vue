@@ -60,7 +60,11 @@ const cancelRequest = (tripId) => {
             <TripMap :trip="trip" :driverLocation="trip.driverLocation" />
 
             <div class="flex flex-1 flex-col items-start gap-3 md:flex-1 md:justify-between md:gap-12">
-                <TripDetails :trip="trip" :driverAddress="driverAddress" showFullInfo />
+                <TripDetails
+                    :trip="trip"
+                    :driverAddress="driverAddress"
+                    :requestStatus="requestStatus"
+                    showFullInfo />
 
                 <div v-if="errorMessage" class="text-red-600 font-semibold text-sm mt-2">
                     {{ errorMessage }}

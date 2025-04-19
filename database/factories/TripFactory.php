@@ -23,10 +23,8 @@ class TripFactory extends Factory
             'car_id' => Car::inRandomOrder()->first()->id,
             'is_started' => $this->faker->boolean,
             'is_complete' => $this->faker->boolean,
-            'origin' => json_encode([
-                'lat' => $this->faker->latitude(),
-                'lng' => $this->faker->longitude()
-            ]),
+            'origin' => $this->faker->city,
+            'price' => $this->faker->numberBetween(5, 100),
             'destination' => json_encode([
                 'lat' => $this->faker->latitude(),
                 'lng' => $this->faker->longitude()

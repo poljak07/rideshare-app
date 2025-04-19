@@ -177,7 +177,7 @@ class TripController extends Controller
                     });
             })
             ->when($request->startingplace, fn ($q) => $q->where('origin', 'LIKE', "%{$request->startingplace}%"))
-            ->when($request->place, fn ($q) => $q->where('destination_name', 'LIKE', "%{$request->place}%"))
+            ->when($request->destination, fn ($q) => $q->where('destination_name', 'LIKE', "%{$request->destination}%"))
             ->paginate(5)
             ->through(fn ($trip) => $this->formatTrip($trip));
 

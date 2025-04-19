@@ -43,7 +43,18 @@ const updateRequestStatus = (tripId, status) => {
 };
 
 const goToPage = (url) => url && router.get(url);
-const handleSearch = (form) => form.get(route('trip.search'), { preserveState: true });
+
+const handleSearch = (form) => {
+    router.get(route('trip.search'), {
+        startingplace: form.startingplace,
+        destination: form.destination,
+    }, {
+        preserveState: true,
+        replace: true,
+    });
+};
+
+
 </script>
 
 <template>
