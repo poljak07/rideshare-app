@@ -48,6 +48,7 @@ const handleSearch = (form) => {
     router.get(route('trip.search'), {
         startingplace: form.startingplace,
         destination: form.destination,
+        datetime: form.datetime,
     }, {
         preserveState: true,
         replace: true,

@@ -63,6 +63,12 @@ class TripController extends Controller
             'place' => ['required'],
             'startingplace' => ['required'],
             'seats' => ['required', 'numeric'],
+            'datetime' => [
+                'required',
+                'date',
+                'after_or_equal:' . now()->toDateTimeString(),
+                'before_or_equal:' . now()->addYear()->toDateTimeString(),
+            ],
             ]);
 
         $trip = Trip::create([
@@ -74,6 +80,7 @@ class TripController extends Controller
             'origin' => $request->input('startingplace'),
             'seats' => $request->input('seats'),
             'driver_location' => json_encode($request->input('startingLocation')),
+            'departure_time' => Carbon::parse($request->input('datetime')),
         ]);
 
         return redirect(route('trip.show', $trip->id));
@@ -106,6 +113,7 @@ class TripController extends Controller
             'origin' => $trip->origin,
             'driver_name' => $trip->user->name,
             'price' => $trip->price,
+            'departure_time' => $trip->departure_time->format('d.m.Y, H:i'),
             'passengers' => $trip->passengers->map(function ($passenger) {
                 return [
                     'id' => $passenger->id,
@@ -178,6 +186,12 @@ class TripController extends Controller
             })
             ->when($request->startingplace, fn ($q) => $q->where('origin', 'LIKE', "%{$request->startingplace}%"))
             ->when($request->destination, fn ($q) => $q->where('destination_name', 'LIKE', "%{$request->destination}%"))
+            ->when($request->datetime, function ($q) use ($request) {
+                $date = Carbon::parse($request->datetime)->startOfDay();
+                $end = Carbon::parse($request->datetime)->endOfDay();
+
+                $q->whereBetween('departure_time', [$date, $end]);
+            })
             ->paginate(5)
             ->through(fn ($trip) => $this->formatTrip($trip));
 
@@ -185,6 +199,7 @@ class TripController extends Controller
             'trips' => $trips->appends($request->query())
         ]);
     }
+
 
     private function formatTrip(Trip $trip)
     {
@@ -198,6 +213,7 @@ class TripController extends Controller
             'price' => $trip->price,
             'requestStatus' => $trip->passengers->firstWhere('user_id', auth()->id())->status ?? null,
             'isDriver' => $trip->user_id === auth()->id(),
+            'departure_time' => $trip->departure_time->format('d.m.Y, H:i'),
             'created_at' => $trip->created_at->diffForHumans(),
             'updated_at' => $trip->updated_at->diffForHumans(),
         ];

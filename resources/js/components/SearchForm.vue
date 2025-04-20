@@ -1,12 +1,15 @@
 <script setup>
 import { useForm } from '@inertiajs/vue3';
 import LocationAutocomplete from '@/components/LocationAutocomplete.vue';
+import Datepicker from '@vuepic/vue-datepicker'
+import '@vuepic/vue-datepicker/dist/main.css'
 
 const form = useForm({
     destination: '',
     location: { lat: null, lng: null },
     startingplace: '',
     startingLocation: { lat: null, lng: null },
+    datetime: null,
 });
 
 const emit = defineEmits(['search']);
@@ -15,8 +18,15 @@ const searchTrips = () => {
     emit('search', {
         startingplace: form.startingplace,
         destination: form.destination,
+        datetime: form.datetime,
     });
 };
+
+const now = new Date()
+const oneYearFromNow = new Date()
+oneYearFromNow.setFullYear(now.getFullYear() + 1)
+
+form.datetime = null
 
 </script>
 
@@ -46,6 +56,18 @@ const searchTrips = () => {
             />
         </div>
 
+        <div class="flex-1 grid gap-2">
+            <label for="datetime">When are you going?</label>
+            <Datepicker
+                v-model="form.datetime"
+                :enable-time-picker="false"
+                :min-date="now"
+                :max-date="oneYearFromNow"
+                placeholder="Pick a date"
+                id="datetime"
+                class="w-full"
+            />
+        </div>
         <div class="flex-none justify-center ">
             <button
                 type="submit"

@@ -23,6 +23,7 @@ defineProps({
             <p class="text-lg text-green-600 font-bold md:text-xl">Price: {{ trip.price }} €</p>
             <p class="max-w-xs text-sm leading-tight text-gray-800 font-bold md:max-w-xl md:text-base dark:text-gray-400">Driver: {{ trip.driver_name }}</p>
             <p class="max-w-xs text-sm leading-tight text-gray-800 font-bold md:max-w-xl md:text-base dark:text-gray-400">Driver's origin: {{ trip.origin }}</p>
+            <p class="max-w-xs text-sm leading-tight text-gray-800 font-bold md:max-w-xl md:text-base dark:text-gray-400">Trip Starting: {{ trip.departure_time }}</p>
 
             <template v-if="trip.isDriver || requestStatus === 'Accepted'">
                 <p v-if="showFullInfo" class="max-w-xs text-sm leading-tight text-gray-800 font-bold md:max-w-xl md:text-base dark:text-gray-400">

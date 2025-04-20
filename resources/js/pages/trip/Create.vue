@@ -4,6 +4,9 @@ import AuthBase from '@/layouts/AuthLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
 import LocationAutocomplete from '@/components/LocationAutocomplete.vue';
+import Datepicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css';
+
 
 const form = useForm({
     place: '',
@@ -20,6 +23,14 @@ const submit = () => {
         onFinish: () => form.reset('place', 'startingplace', 'seats', 'datetime', 'location', 'startingLocation', 'price'),
     });
 };
+
+const now = new Date();
+const oneYearFromNow = new Date();
+oneYearFromNow.setFullYear(now.getFullYear() + 1);
+
+const minDate = now;
+const maxDate = oneYearFromNow;
+
 </script>
 
 <template>
@@ -49,6 +60,25 @@ const submit = () => {
                     @place-selected="({ location }) => form.startingLocation = location"
                 />
 
+
+                <div class="grid gap-2">
+                    <Label for="datetime">Departure Date & Time</Label>
+                    <Datepicker
+                        v-model="form.datetime"
+                        :minute-increment="5"
+                        :is-24="true"
+                        :enable-time-picker="true"
+                        :required="true"
+                        :min-date="minDate"
+                        :max-date="maxDate"
+                        :placeholder="'Select date and time'"
+                        id="datetime"
+                        class="w-full"
+                    />
+                    <InputError :message="form.errors.datetime" />
+                </div>
+
+
                 <div class="grid grid-cols-2 gap-4">
 
                     <div class="grid gap-2">
@@ -75,6 +105,7 @@ const submit = () => {
                         <InputError :message="form.errors.price" />
                     </div>
                 </div>
+
                 <Button type="submit" class="mt-2 w-full" tabindex="4" :disabled="form.processing">
                     <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
                     Submit Ride

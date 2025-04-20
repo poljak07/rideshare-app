@@ -30,6 +30,10 @@ class TripFactory extends Factory
                 'lng' => $this->faker->longitude()
             ]),
             'destination_name' => $this->faker->city,
+            'departure_time' => now()
+                ->addDays($this->faker->numberBetween(1, 10))
+                ->setMinutes(floor(now()->minute / 5) * 5)
+                ->setSeconds(0),
             'driver_location' => json_encode([
                 'lat' => $this->faker->latitude(43.85, 44.05),
                 'lng' => $this->faker->longitude(18.30, 18.45),
