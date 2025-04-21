@@ -1,17 +1,35 @@
 <script setup>
 import { router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 const props = defineProps({
     trip: Object,
+    errors: Object
 });
 
 const emit = defineEmits(['refresh']);
 const isFinishing = ref(false);
+const startError = ref(null);
+
+const isTooEarly = computed(() => {
+    const departureTime = new Date(props.trip.departure_time);
+    const now = new Date();
+    const twelveHoursMs = 12 * 60 * 60 * 1000;
+    return departureTime - now > twelveHoursMs;
+});
 
 const startTrip = () => {
+    startError.value = null;
+    if (isTooEarly.value) return;
+
     router.put(route('trip.start', { trip: props.trip.id }), {}, {
-        onSuccess: () => emit('refresh'),
+        onSuccess: () => {
+            emit('refresh');
+            startError.value = null;
+        },
+        onError: (errors) => {
+            startError.value = errors.start || 'Failed to start trip';
+        }
     });
 };
 
@@ -40,15 +58,18 @@ const updateStatus = (passengerId, status) => {
         onSuccess: () => emit('refresh'),
     });
 };
+
 </script>
 
 <template>
+
     <div class="mt-12 space-y-8">
         <div class="grid lg:grid-cols-2 gap-8 items-start">
             <div class="space-y-6">
                 <h2 class="text-2xl font-bold text-gray-900">Trip Management</h2>
 
                 <div class="flex flex-col gap-4">
+
                     <div v-if="trip.is_complete" class="flex items-center gap-2 bg-gray-600 text-white px-5 py-3 rounded-xl">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
@@ -56,10 +77,16 @@ const updateStatus = (passengerId, status) => {
                         Trip is Finished!
                     </div>
 
+
+                    <p v-if="startError" class="text-red-600 text-sm mt-1">
+                        {{ startError }}
+                    </p>
+                    
                     <button
                         v-if="!trip.is_started && !trip.is_complete"
                         @click="startTrip"
-                        class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl transition-all"
+                        :disabled="isTooEarly"
+                        class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>

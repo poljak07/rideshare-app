@@ -285,7 +285,17 @@ class TripController extends Controller
             abort(403);
         }
 
+        $departureTime = \Carbon\Carbon::parse($trip->departure_time);
+
+        if ($departureTime->diffInHours(now(), false) < -12) {
+            return back()->withErrors([
+                'start' => 'You cannot start the trip more than 12 hours before departure.'
+            ]);
+        }
+
         $trip->update(['is_started' => 1]);
+
+        return back();
     }
 
     public function tripFinish(Trip $trip)
