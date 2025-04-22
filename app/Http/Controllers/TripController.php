@@ -34,7 +34,7 @@ class TripController extends Controller
                             });
                     });
             })
-            ->paginate(5)
+            ->paginate(10)
             ->through(fn ($trip) => $this->formatTrip($trip));
 
         return Inertia::render('trip/Index', [

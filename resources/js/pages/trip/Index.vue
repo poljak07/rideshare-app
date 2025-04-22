@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
 import AppNavbar from '@/Components/AppNavbar.vue';
 import TripMap from '@/Components/TripMap.vue';
@@ -11,11 +11,22 @@ import Pagination from '@/Components/Pagination.vue';
 const props = defineProps({ trips: Object });
 const tripsData = ref([]);
 
+const showMyTrips = ref(true);
+
+const filteredTrips = computed(() => {
+    if (showMyTrips.value) return tripsData.value;
+
+    return tripsData.value.filter(
+        trip => !(trip.requestStatus === 'Accepted' || trip.isDriver)
+    );
+});
+
 const sortTrips = (trips) => {
     return [...trips].sort((a, b) => {
-        const aApproved = a.requestStatus === 'Accepted' ? 1 : 0;
-        const bApproved = b.requestStatus === 'Accepted' ? 1 : 0;
-        return bApproved - aApproved;
+        const aIsMine = a.requestStatus === 'Accepted' || a.isDriver;
+        const bIsMine = b.requestStatus === 'Accepted' || b.isDriver;
+
+        return (bIsMine ? 1 : 0) - (aIsMine ? 1 : 0);
     });
 };
 
@@ -65,11 +76,19 @@ const handleSearch = (form) => {
 
         <div class="flex items-center justify-center gap-4 mb-6 flex-row">
             <SearchForm @search="handleSearch" />
+            <div class="flex justify-end px-4 sm:px-6 lg:px-8">
+                <label class="inline-flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <input type="checkbox" v-model="showMyTrips" class="rounded border-gray-300 text-emerald-600 shadow-sm focus:ring-emerald-500" />
+                    <span>Show My Trips</span>
+                </label>
+            </div>
         </div>
+
+
 
         <section class="space-y-6 py-12 h- max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
             <div
-                v-for="trip in tripsData"
+                v-for="trip in filteredTrips"
                 :key="trip.id"
                 class="relative bg-white dark:bg-gray-800 rounded-xl shadow-sm transition-all duration-200 ease-out"
                 :class="{

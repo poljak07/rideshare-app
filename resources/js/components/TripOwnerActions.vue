@@ -81,7 +81,7 @@ const updateStatus = (passengerId, status) => {
                     <p v-if="startError" class="text-red-600 text-sm mt-1">
                         {{ startError }}
                     </p>
-                    
+
                     <button
                         v-if="!trip.is_started && !trip.is_complete"
                         @click="startTrip"
