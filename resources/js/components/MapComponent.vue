@@ -23,6 +23,7 @@ const apiKey = page.props.googleMapsApiKey;
 
 const mapContainer = ref(null);
 let map = null;
+let driverMarker = null;
 
 onMounted(() => {
     if (!apiKey) {
@@ -52,7 +53,7 @@ onMounted(() => {
             icon: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png'
         });
 
-        const driverMarker = new google.maps.Marker({
+         driverMarker = new google.maps.Marker({
             position: {lat: driverLat, lng: driverLng},
             map: map,
             title: 'Driver Location',
@@ -78,16 +79,12 @@ onMounted(() => {
 });
 
 watch(() => props.driverLocation, (newLocation) => {
-    if (map) {
+    if (driverMarker && newLocation) {
         const {lat, lng} = newLocation;
-        new google.maps.Marker({
-            position: {lat, lng},
-            map: map,
-            title: 'Driver Location',
-            icon: 'https://maps.gstatic.com/mapfiles/ms2/micons/cabs.png'
-        });
+        driverMarker.setPosition({lat, lng});
     }
 }, {deep: true});
+
 </script>
 
 

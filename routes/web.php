@@ -27,6 +27,7 @@ Route::middleware('auth')->group(function() {
         Route::delete('destroy/{trip}', [TripController::class, 'destroy'])->name('destroy');
         Route::put('finish/{trip}', [TripController::class, 'tripFinish'])->name('finish');
         Route::put('start/{trip}', [TripController::class, 'tripStart'])->name('start');
+        Route::put('location/{trip}', [TripController::class, 'updateLocation'])->name('updateLocation');
         Route::get('{trip}', [TripController::class, 'show'])->name('show');
     });
 

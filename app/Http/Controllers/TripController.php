@@ -307,5 +307,27 @@ class TripController extends Controller
         $trip->update(['is_complete' => 1]);
     }
 
+    public function updateLocation(Request $request, Trip $trip)
+    {
+        if ($trip->user_id !== auth()->id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'lat' => 'required|numeric',
+            'lng' => 'required|numeric',
+        ]);
+
+        $trip->driver_location = json_encode([
+            'lat' => $request->lat,
+            'lng' => $request->lng,
+        ]);
+
+        $trip->save();
+
+        return response()->json(['success' => true]);
+    }
+
+
 
 }
