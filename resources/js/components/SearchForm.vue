@@ -68,10 +68,10 @@ form.datetime = null
                 class="w-full"
             />
         </div>
-        <div class="flex-none justify-center ">
+        <div class="flex-none">
             <button
                 type="submit"
-                class="px-6 py-2 bg-blue-700 text-white font-semibold rounded-lg hover:bg-blue-900 transition-all h-[42px]"
+                class="px-6 py-2 bg-blue-700 text-white font-semibold rounded-lg hover:bg-blue-900 transition-all w-full h-full"
             >
                 Search
             </button>
