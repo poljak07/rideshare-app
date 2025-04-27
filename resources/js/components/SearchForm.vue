@@ -4,12 +4,19 @@ import LocationAutocomplete from '@/components/LocationAutocomplete.vue';
 import Datepicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 
+const props = defineProps({
+    startingplace: String,
+    destination: String,
+    datetime: String,
+});
+
+
 const form = useForm({
-    destination: '',
+    destination: props.destination || '',
     location: { lat: null, lng: null },
-    startingplace: '',
+    startingplace: props.startingplace || '',
     startingLocation: { lat: null, lng: null },
-    datetime: null,
+    datetime: props.datetime ? new Date(props.datetime) : null,
 });
 
 const emit = defineEmits(['search']);

@@ -172,31 +172,21 @@ class TripController extends Controller
         $trips = Trip::with(['user', 'passengers' => function ($query) {
             $query->where('user_id', auth()->id())->select('trip_id', 'status', 'user_id');
         }])
-            ->where(function ($query) {
-                $query->where('is_started', 0)
-                    ->orWhere(function ($query) {
-                        $query->where('is_started', 1)
-                            ->where(function ($query) {
-                                $query->where('user_id', auth()->id())
-                                    ->orWhereHas('passengers', function ($q) {
-                                        $q->where('user_id', auth()->id());
-                                    });
-                            });
-                    });
-            })
             ->when($request->startingplace, fn ($q) => $q->where('origin', 'LIKE', "%{$request->startingplace}%"))
             ->when($request->destination, fn ($q) => $q->where('destination_name', 'LIKE', "%{$request->destination}%"))
             ->when($request->datetime, function ($q) use ($request) {
                 $date = Carbon::parse($request->datetime)->startOfDay();
                 $end = Carbon::parse($request->datetime)->endOfDay();
-
                 $q->whereBetween('departure_time', [$date, $end]);
             })
             ->paginate(5)
             ->through(fn ($trip) => $this->formatTrip($trip));
 
         return Inertia::render('trip/Index', [
-            'trips' => $trips->appends($request->query())
+            'trips' => $trips,
+            'startingplace' => $request->startingplace,
+            'destination' => $request->destination,
+            'datetime' => $request->datetime,
         ]);
     }
 

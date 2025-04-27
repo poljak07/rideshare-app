@@ -35,7 +35,12 @@ const handleSearch = (form) => {
                 </div>
             </div>
 
-            <SearchForm  @search="handleSearch" />
+            <SearchForm
+                @search="handleSearch"
+                :startingplace="$page.props.startingplace"
+                :destination="$page.props.destination"
+                :datetime="$page.props.datetime"
+            />
 
             <!-- Navigation Links -->
             <div class="flex justify-center mt-6 space-x-6 text-sm font-medium text-gray-800">

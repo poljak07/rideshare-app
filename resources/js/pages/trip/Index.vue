@@ -75,7 +75,12 @@ const handleSearch = (form) => {
         <AppNavbar />
 
         <div class="flex items-center justify-center gap-4 mb-6 flex-row">
-            <SearchForm @search="handleSearch" />
+            <SearchForm
+                @search="handleSearch"
+                :startingplace="$page.props.startingplace"
+                :destination="$page.props.destination"
+                :datetime="$page.props.datetime"
+            />
             <div class="flex justify-end px-4 sm:px-6 lg:px-8">
                 <label class="inline-flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                     <input type="checkbox" v-model="showMyTrips" class="rounded border-gray-300 text-emerald-600 shadow-sm focus:ring-emerald-500" />
