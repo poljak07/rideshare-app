@@ -318,6 +318,28 @@ class TripController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function myTrips()
+    {
+        $user = auth()->user();
 
+        $trips = Trip::with(['user', 'passengers' => function ($query) use ($user) {
+            $query->where('user_id', $user->id)->select('trip_id', 'status', 'user_id');
+        }])
+            ->where(function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+
+                $query->orWhereHas('passengers', function ($q) use ($user) {
+                    $q->where('user_id', $user->id)
+                        ->where('status', 'Accepted');
+                });
+            })
+            ->latest()
+            ->paginate(10)
+            ->through(fn ($trip) => $this->formatTrip($trip));
+
+        return Inertia::render('trip/Index', [
+            'trips' => $trips,
+        ]);
+    }
 
 }

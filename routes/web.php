@@ -25,10 +25,12 @@ Route::middleware('auth')->group(function() {
         Route::post('request/{trip}', [TripController::class, 'tripRequest'])->name('request');
         Route::delete('cancel/{trip}', [TripController::class, 'tripCancel'])->name('cancel');
         Route::delete('destroy/{trip}', [TripController::class, 'destroy'])->name('destroy');
+        Route::get('my-trips', [TripController::class, 'myTrips'])->name('my');
         Route::put('finish/{trip}', [TripController::class, 'tripFinish'])->name('finish');
         Route::put('start/{trip}', [TripController::class, 'tripStart'])->name('start');
         Route::put('location/{trip}', [TripController::class, 'updateLocation'])->name('updateLocation');
         Route::get('{trip}', [TripController::class, 'show'])->name('show');
+
     });
 
     Route::prefix('cars')->name('car.')->group(function() {
