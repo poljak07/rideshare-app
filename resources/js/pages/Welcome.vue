@@ -46,8 +46,8 @@ const handleSearch = (form) => {
             <div class="flex justify-center mt-6 space-x-6 text-sm font-medium text-gray-800">
                 <a :href="route('trip.my')" class="hover:underline pr-4 border-r border-gray-300">My Trips</a>
                 <a :href="route('trip.create')" class="hover:underline pr-4 border-r border-gray-300">Create a Trip</a>
-                <a href="#" class="hover:underline pr-4 border-r border-gray-300">How does this work?</a>
-                <a href="#" class="hover:underline">FAQ</a>
+                <a :href="route('how-does-this-work')" class="hover:underline pr-4 border-r border-gray-300">How does this work?</a>
+                <a :href="route('faq')" class="hover:underline">FAQ</a>
             </div>
 
 

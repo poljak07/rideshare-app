@@ -42,7 +42,13 @@ Route::middleware('auth')->group(function() {
     Route::get('/reverse-geocode', LocationController::class);
 });
 
+Route::get('/faq', function () {
+    return Inertia::render('Faq');
+})->name('faq');
 
+Route::get('/how-does-this-work', function () {
+    return Inertia::render('WorkPrinciple');
+})->name('how-does-this-work');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
